@@ -335,9 +335,12 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
         children: [
           Row(
             children: [
-              Text(
-                '📊 Travel Pulse',
-                style: AppTypography.bodySmall.copyWith(fontWeight: FontWeight.bold),
+              Flexible(
+                child: Text(
+                  '📊 Travel Pulse',
+                  style: AppTypography.bodySmall.copyWith(fontWeight: FontWeight.bold),
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
               if (stats?.isDemoData == true) ...[
                 const SizedBox(width: 6),

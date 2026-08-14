@@ -32,9 +32,12 @@ class CityPulseCard extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      Text(
-                        "What's happening around you",
-                        style: AppTypography.labelLarge.copyWith(fontWeight: FontWeight.bold),
+                      Flexible(
+                        child: Text(
+                          "What's happening around you",
+                          style: AppTypography.labelLarge.copyWith(fontWeight: FontWeight.bold),
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
                       if (data?.isDemoData == true) ...[
                         const SizedBox(width: 6),
