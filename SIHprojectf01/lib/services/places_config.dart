@@ -1,12 +1,12 @@
+import '../config/app_config.dart';
+
 /// Configuration for Geoapify Places API and discovery provider.
 abstract class PlacesConfig {
   PlacesConfig._();
 
-  /// Geoapify API Key.
-  ///
-  /// Hardcoded for the college hackathon prototype.
-  /// Replace YOUR_API_KEY_HERE with your actual Geoapify key.
-  static const String geoapifyApiKey = '2e8d8eaf77084419b7bef47119acd27b';
+  /// Geoapify API Key, sourced from the local (gitignored) AppConfig.
+  /// See lib/config/app_config.example.dart to set up your own key.
+  static const String geoapifyApiKey = AppConfig.geoapifyApiKey;
 
   /// Helper getter to verify if the API key is configured.
   static bool get isConfigured =>

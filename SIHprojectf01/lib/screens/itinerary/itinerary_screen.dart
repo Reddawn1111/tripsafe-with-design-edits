@@ -1,15 +1,22 @@
 import 'package:flutter/material.dart';
 import '../../app/routes.dart';
+import '../../models/itinerary_conflict.dart';
 import '../../models/trip_plan.dart';
+import '../../services/itinerary_conflict_service.dart';
 import '../../services/trip_planning_service.dart';
 import '../../utils/app_theme.dart';
 import '../../widgets/buttons.dart';
 import '../../widgets/common_widgets.dart';
+import 'add_stop_sheet.dart';
 
-/// ItineraryScreen — Displays the user's trip itinerary and day route stops (Step 8)
+/// ItineraryScreen — Displays and edits the user's trip itinerary and day
+/// route stops. The canonical, routed itinerary editing surface: reorder,
+/// edit time, change place, skip, add, and delete stops all live here.
 class ItineraryScreen extends StatelessWidget {
   final String tripId;
   const ItineraryScreen({super.key, this.tripId = ''});
+
+  static final _conflictService = ItineraryConflictService();
 
   @override
   Widget build(BuildContext context) {
@@ -69,9 +76,9 @@ class ItineraryScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: AppSpacing.sm),
                 OutlinedButton.icon(
-                  onPressed: () => Navigator.pushNamed(context, AppRoutes.expenses),
-                  icon: const Icon(Icons.receipt_long),
-                  label: const Text('Group Expenses & Settlement'),
+                  onPressed: () => Navigator.pushNamed(context, AppRoutes.group),
+                  icon: const Icon(Icons.group_outlined),
+                  label: const Text('View Group & Invite Code'),
                   style: OutlinedButton.styleFrom(
                     minimumSize: const Size(double.infinity, 48),
                   ),
@@ -167,6 +174,8 @@ class ItineraryScreen extends StatelessWidget {
     DayPlan day,
     int dIdx,
   ) {
+    final conflicts = _conflictService.detectConflicts(day);
+
     return Container(
       margin: const EdgeInsets.only(bottom: AppSpacing.md),
       decoration: BoxDecoration(
@@ -203,15 +212,20 @@ class ItineraryScreen extends StatelessWidget {
               ],
             ),
           ),
-          ListView.builder(
+
+          if (conflicts.isNotEmpty) _buildConflictBanner(conflicts),
+
+          ReorderableListView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             itemCount: day.stops.length,
+            onReorder: (oldIndex, newIndex) => service.reorderStops(dIdx, oldIndex, newIndex),
             itemBuilder: (context, sIdx) {
               final stop = day.stops[sIdx];
               final isFirst = sIdx == 0;
 
               return Padding(
+                key: ValueKey(stop.id),
                 padding: const EdgeInsets.all(AppSpacing.sm),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -251,12 +265,35 @@ class ItineraryScreen extends StatelessWidget {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
-                                stop.place.name,
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  decoration: stop.isVisited ? TextDecoration.lineThrough : null,
-                                ),
+                              Row(
+                                children: [
+                                  Flexible(
+                                    child: Text(
+                                      stop.place.name,
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        decoration: stop.isVisited || stop.isSkipped
+                                            ? TextDecoration.lineThrough
+                                            : null,
+                                        color: stop.isSkipped ? Colors.grey : null,
+                                      ),
+                                    ),
+                                  ),
+                                  if (stop.isSkipped) ...[
+                                    const SizedBox(width: 6),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                                      decoration: BoxDecoration(
+                                        color: Colors.grey.shade200,
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: const Text(
+                                        'Skipped',
+                                        style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Colors.grey),
+                                      ),
+                                    ),
+                                  ],
+                                ],
                               ),
                               Text(
                                 '${stop.startTime} – ${stop.endTime} · (${stop.estimatedDurationMinutes}m visit)',
@@ -278,10 +315,7 @@ class ItineraryScreen extends StatelessWidget {
                             color: stop.estimatedCost > 0 ? AppTheme.primary : AppTheme.success,
                           ),
                         ),
-                        IconButton(
-                          icon: const Icon(Icons.delete_outline, size: 18, color: Colors.redAccent),
-                          onPressed: () => service.removeStop(dIdx, stop.id),
-                        ),
+                        _buildStopMenu(context, service, trip, dIdx, sIdx, stop),
                       ],
                     ),
                   ],
@@ -289,8 +323,146 @@ class ItineraryScreen extends StatelessWidget {
               );
             },
           ),
+
+          Padding(
+            padding: const EdgeInsets.fromLTRB(AppSpacing.sm, 0, AppSpacing.sm, AppSpacing.sm),
+            child: TextButton.icon(
+              onPressed: () => _addStop(context, service, trip, dIdx),
+              icon: const Icon(Icons.add, size: 18),
+              label: const Text('Add stop'),
+            ),
+          ),
         ],
       ),
     );
+  }
+
+  Widget _buildConflictBanner(List<ItineraryConflict> conflicts) {
+    final shown = conflicts.take(2).toList();
+    return Container(
+      margin: const EdgeInsets.fromLTRB(AppSpacing.sm, AppSpacing.sm, AppSpacing.sm, 0),
+      padding: const EdgeInsets.all(AppSpacing.sm),
+      decoration: BoxDecoration(
+        color: AppTheme.warning.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+        border: Border.all(color: AppTheme.warning.withValues(alpha: 0.35)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          for (final conflict in shown)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 2),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Icon(Icons.warning_amber_rounded, size: 14, color: AppTheme.warning),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      conflict.message,
+                      style: const TextStyle(fontSize: 11, color: Colors.black87),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStopMenu(
+    BuildContext context,
+    TripPlanningService service,
+    TripPlan trip,
+    int dIdx,
+    int sIdx,
+    StopItem stop,
+  ) {
+    return PopupMenuButton<String>(
+      icon: const Icon(Icons.more_vert, size: 18),
+      onSelected: (value) async {
+        switch (value) {
+          case 'edit_time':
+            await _editStopTime(context, service, dIdx, stop);
+            break;
+          case 'change_place':
+            await _changePlace(context, service, trip, dIdx, stop);
+            break;
+          case 'insert_after':
+            await _addStop(context, service, trip, dIdx, insertAfterIndex: sIdx);
+            break;
+          case 'toggle_skip':
+            service.toggleSkipStop(dIdx, stop.id);
+            break;
+          case 'delete':
+            service.removeStop(dIdx, stop.id);
+            break;
+        }
+      },
+      itemBuilder: (context) => [
+        const PopupMenuItem(value: 'edit_time', child: Text('Edit time')),
+        const PopupMenuItem(value: 'change_place', child: Text('Change place')),
+        const PopupMenuItem(value: 'insert_after', child: Text('Insert stop after')),
+        PopupMenuItem(value: 'toggle_skip', child: Text(stop.isSkipped ? 'Unskip' : 'Skip')),
+        const PopupMenuItem(value: 'delete', child: Text('Delete')),
+      ],
+    );
+  }
+
+  Future<void> _editStopTime(
+    BuildContext context,
+    TripPlanningService service,
+    int dIdx,
+    StopItem stop,
+  ) async {
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.now(),
+      helpText: 'Set start time for ${stop.place.name}',
+    );
+    if (picked == null) return;
+
+    final hour = picked.hourOfPeriod == 0 ? 12 : picked.hourOfPeriod;
+    final minute = picked.minute.toString().padLeft(2, '0');
+    final period = picked.period == DayPeriod.am ? 'AM' : 'PM';
+    service.updateStopStartTime(dIdx, stop.id, '$hour:$minute $period');
+  }
+
+  Future<void> _changePlace(
+    BuildContext context,
+    TripPlanningService service,
+    TripPlan trip,
+    int dIdx,
+    StopItem stop,
+  ) async {
+    final newPlace = await AddStopSheet.show(
+      context,
+      latitude: trip.destinationLat,
+      longitude: trip.destinationLng,
+      title: 'Change to...',
+    );
+    if (newPlace == null) return;
+    service.replaceStopPlace(dIdx, stop.id, newPlace);
+  }
+
+  Future<void> _addStop(
+    BuildContext context,
+    TripPlanningService service,
+    TripPlan trip,
+    int dIdx, {
+    int? insertAfterIndex,
+  }) async {
+    final place = await AddStopSheet.show(
+      context,
+      latitude: trip.destinationLat,
+      longitude: trip.destinationLng,
+    );
+    if (place == null) return;
+
+    final day = trip.days[dIdx];
+    final position = insertAfterIndex != null ? insertAfterIndex + 1 : day.stops.length;
+    service.insertStopAt(dIdx, position, place);
   }
 }

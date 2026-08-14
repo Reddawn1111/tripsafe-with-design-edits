@@ -5,6 +5,7 @@ import '../../models/trip_plan.dart';
 import '../../services/location_service.dart';
 import '../../services/nearby_discovery_service.dart';
 import '../../services/trip_planning_service.dart';
+import '../../repositories/local_demo_travel_repository.dart';
 import '../../utils/app_theme.dart';
 import '../../widgets/buttons.dart';
 import '../../widgets/common_widgets.dart';
@@ -105,6 +106,9 @@ class _PlanningScreenState extends State<PlanningScreen> {
         userLat: lat,
         userLon: lon,
       );
+
+      // Backend-ready repository round-trip (Stage 1: local/demo repository).
+      await LocalDemoTravelRepository().saveTrip(plan);
 
       setState(() => _isGenerating = false);
 

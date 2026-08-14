@@ -27,6 +27,20 @@ void main() {
       expect(matchesAllPark, isTrue);
     });
 
+    test('Nature intent covers outdoor categories and stays distinct from Explore', () {
+      final matchesNatureForest = UserIntent.nature.matches(PlaceCategory.nature, ['natural.forest']);
+      expect(matchesNatureForest, isTrue);
+
+      final matchesNatureBeach = UserIntent.nature.matches(PlaceCategory.beach, ['beach']);
+      expect(matchesNatureBeach, isTrue);
+
+      final matchesExploreBeach = UserIntent.explore.matches(PlaceCategory.beach, ['beach']);
+      expect(matchesExploreBeach, isFalse); // Beach moved to Nature, not double-counted in Explore
+
+      final matchesExploreMuseum = UserIntent.explore.matches(PlaceCategory.museum, ['museum']);
+      expect(matchesExploreMuseum, isTrue);
+    });
+
     test('Place model stores visitCount, typicalDwellMinutes, and estimatedCost accurately', () {
       final place = Place(
         id: 'p1',

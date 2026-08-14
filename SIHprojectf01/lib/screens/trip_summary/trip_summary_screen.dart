@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../app/routes.dart';
-import '../../services/group_trip_service.dart';
 import '../../services/trip_planning_service.dart';
 import '../../utils/app_theme.dart';
 import '../../widgets/buttons.dart';
@@ -14,7 +13,6 @@ class TripSummaryScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final planningService = TripPlanningService.instance;
-    final groupService = GroupTripService.instance;
     final activeTrip = planningService.activeTrip;
 
     return Scaffold(
@@ -57,7 +55,7 @@ class TripSummaryScreen extends StatelessWidget {
               children: [
                 Expanded(child: _buildMetricTile('Stops Visited', '${activeTrip?.totalStopsCount ?? 4}', Icons.pin_drop)),
                 const SizedBox(width: AppSpacing.sm),
-                Expanded(child: _buildMetricTile('Group Spent', '₹${groupService.totalSpent.round()}', Icons.currency_rupee)),
+                Expanded(child: _buildMetricTile('Trip Days', '${activeTrip?.days.length ?? 1}', Icons.calendar_today)),
               ],
             ),
             const SizedBox(height: AppSpacing.sm),

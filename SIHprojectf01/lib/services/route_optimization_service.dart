@@ -28,11 +28,20 @@ class RouteOptimizationService {
     return max(4, min(120, minutes));
   }
 
-  /// Calculates travel times and distances along a sequential list of stops
+  /// Calculates travel times and distances along a sequential list of stops.
+  ///
+  /// A stop with a non-null [StopItem.pinnedStartTime] (set via a user
+  /// "change time" edit) anchors [currentTime] to that pinned value instead
+  /// of the sequentially-computed arrival time — the travel distance/time
+  /// from the previous stop is still computed and stored for display, but
+  /// the pinned time wins for scheduling. Later stops continue sequential
+  /// computation from that anchor, so a manual time edit persists across
+  /// later reorders/adds/removals instead of being silently overwritten.
   List<StopItem> calculateRouteMetrics(List<StopItem> stops, {DateTime? dayStartTime}) {
     if (stops.isEmpty) return [];
 
-    DateTime currentTime = dayStartTime ?? DateTime(2026, 9, 1, 9, 30); // Default 9:30 AM start
+    final baseDate = dayStartTime ?? DateTime(2026, 9, 1, 9, 30); // Default 9:30 AM start
+    DateTime currentTime = baseDate;
     final List<StopItem> updated = [];
 
     for (int i = 0; i < stops.length; i++) {
@@ -52,6 +61,15 @@ class RouteOptimizationService {
       }
 
       currentTime = currentTime.add(Duration(minutes: travelMin));
+
+      final pinned = currentStop.pinnedStartTime;
+      if (pinned != null) {
+        final parsedPin = _parseClockTime(pinned, baseDate);
+        if (parsedPin != null) {
+          currentTime = parsedPin;
+        }
+      }
+
       final startTimeStr = _formatTime(currentTime);
 
       currentTime = currentTime.add(Duration(minutes: currentStop.estimatedDurationMinutes));
@@ -129,6 +147,29 @@ class RouteOptimizationService {
     }
 
     return calculateRouteMetrics(optimized);
+  }
+
+  /// Parses a "h:mm AM/PM" string (e.g. "5:00 PM") into a [DateTime] on
+  /// [referenceDate]. Returns null if the string doesn't match the format.
+  DateTime? _parseClockTime(String text, DateTime referenceDate) {
+    final match = RegExp(r'^(\d{1,2}):(\d{2})\s*(AM|PM)$', caseSensitive: false)
+        .firstMatch(text.trim());
+    if (match == null) return null;
+
+    int hour = int.parse(match.group(1)!);
+    final minute = int.parse(match.group(2)!);
+    final period = match.group(3)!.toUpperCase();
+
+    if (period == 'PM' && hour != 12) hour += 12;
+    if (period == 'AM' && hour == 12) hour = 0;
+
+    return DateTime(
+      referenceDate.year,
+      referenceDate.month,
+      referenceDate.day,
+      hour,
+      minute,
+    );
   }
 
   String _formatTime(DateTime time) {

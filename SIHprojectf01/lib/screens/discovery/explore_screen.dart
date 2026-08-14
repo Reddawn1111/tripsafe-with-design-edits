@@ -11,6 +11,7 @@ import '../../services/recommendation_service.dart';
 import '../../services/travel_insights_service.dart';
 import '../../utils/app_theme.dart';
 import '../../widgets/buttons.dart';
+import '../../widgets/city_pulse_card.dart';
 import '../../widgets/common_widgets.dart';
 import 'place_detail_sheet.dart';
 
@@ -363,6 +364,11 @@ class _ExploreScreenState extends State<ExploreScreen> {
             else
               SliverList(
                 delegate: SliverChildListDelegate([
+                  // City Pulse: friendly, city-level summary of the same
+                  // aggregated data behind Travel Pulse (no new network calls,
+                  // computed over places already loaded for this screen).
+                  CityPulseCard(summary: _insightsService.computeCityPulse(_allNearbyPlaces)),
+
                   // 1. Recommended Around You (Multi-Factor Scored)
                   _buildSectionHeader(
                     '⭐ Recommended Around You',
@@ -741,12 +747,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            AppTheme.secondary,
-            AppTheme.secondary.withValues(alpha: 0.8),
-          ],
-        ),
+        color: AppTheme.secondary,
         borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
       ),
       child: Row(

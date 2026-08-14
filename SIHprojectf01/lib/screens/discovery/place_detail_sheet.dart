@@ -5,6 +5,7 @@ import '../../services/itinerary_service.dart';
 import '../../services/travel_insights_service.dart';
 import '../../utils/app_theme.dart';
 import '../../widgets/buttons.dart';
+import '../../widgets/common_widgets.dart';
 
 /// Bottom Sheet modal showing detailed information, dwell intelligence,
 /// best visit windows, and itinerary actions for a selected Place.
@@ -222,85 +223,10 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
 
             const SizedBox(height: AppSpacing.md),
 
-            // Mobility & Visit Intelligence Section (Step 5)
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(AppSpacing.sm),
-              decoration: BoxDecoration(
-                color: Colors.orange.withValues(alpha: 0.08),
-                borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-                border: Border.all(color: Colors.orange.withValues(alpha: 0.3)),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      const Text('🔥', style: TextStyle(fontSize: 18)),
-                      const SizedBox(width: 8),
-                      Text(
-                        place.visitPopularityLabel,
-                        style: AppTypography.bodySmall.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.orange.shade900,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 6),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        '⏱ Typical Stay: ${place.typicalDwellMinutes} min',
-                        style: AppTypography.caption.copyWith(fontWeight: FontWeight.w600),
-                      ),
-                      if (place.busyHours != null)
-                        Text(
-                          '🕐 Busiest: ${place.busyHours}',
-                          style: AppTypography.caption.copyWith(color: Colors.grey.shade700),
-                        ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: AppSpacing.sm),
-
-            // Best Time to Visit Guide (Step 6)
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(AppSpacing.sm),
-              decoration: BoxDecoration(
-                color: AppTheme.secondary.withValues(alpha: 0.08),
-                borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-                border: Border.all(color: AppTheme.secondary.withValues(alpha: 0.3)),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      const Icon(Icons.wb_sunny_outlined, color: AppTheme.secondary, size: 18),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Best Time to Visit: ${guide['bestFor']}',
-                        style: AppTypography.bodySmall.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: AppTheme.secondary,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Recommended Window: ${guide['recommended']}',
-                    style: AppTypography.caption.copyWith(fontWeight: FontWeight.w500),
-                  ),
-                ],
-              ),
-            ),
+            // Travel Pulse: aggregated popularity (gated through
+            // TravelInsightsService's k-anonymity/demo-data rules) + best
+            // time to visit guidance, merged into one calmer section.
+            _buildTravelPulseCard(place, guide),
 
             const SizedBox(height: AppSpacing.md),
 
@@ -391,6 +317,86 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildTravelPulseCard(Place place, Map<String, String> guide) {
+    // Route through TravelInsightsService rather than reading place.visitCount
+    // /busyHours directly — this is what applies the k-anonymity threshold
+    // and demo-data gating, instead of showing unconditional numbers for a
+    // real (non-demo) place with too few logged visits.
+    final stats = _insightsService.getAggregateStats(place);
+
+    return AppCard(
+      padding: const EdgeInsets.all(AppSpacing.sm),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Text(
+                '📊 Travel Pulse',
+                style: AppTypography.bodySmall.copyWith(fontWeight: FontWeight.bold),
+              ),
+              if (stats?.isDemoData == true) ...[
+                const SizedBox(width: 6),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade200,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    'DEMO DATA',
+                    style: AppTypography.caption.copyWith(
+                      fontSize: 8,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey.shade700,
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
+          const SizedBox(height: 6),
+          if (stats == null)
+            Text(
+              'Not enough traveller data yet — be the first to log a consented visit here.',
+              style: AppTypography.caption.copyWith(color: Colors.grey.shade600),
+            )
+          else
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Text(
+                    '🔥 ${stats.totalVisits} visits · Avg stay ${stats.averageDwellMinutes} min',
+                    style: AppTypography.caption.copyWith(fontWeight: FontWeight.w600),
+                  ),
+                ),
+                Text(
+                  '🕐 ${stats.busiestTimeWindow}',
+                  style: AppTypography.caption.copyWith(color: Colors.grey.shade600),
+                ),
+              ],
+            ),
+          const SizedBox(height: 6),
+          Divider(height: 1, color: Colors.grey.shade200),
+          const SizedBox(height: 6),
+          Row(
+            children: [
+              const Icon(Icons.wb_sunny_outlined, color: AppTheme.secondary, size: 16),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  'Best time: ${guide['bestFor']} · ${guide['recommended']}',
+                  style: AppTypography.caption.copyWith(fontWeight: FontWeight.w600),
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }

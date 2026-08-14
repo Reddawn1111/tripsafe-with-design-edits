@@ -14,9 +14,9 @@ abstract class AppTheme {
   static const Color success = Color(0xFF2E7D32); // safe green
 
   static const Color _surfaceLight = Color(0xFFF8FAFC);
-  static const Color _surfaceDark = Color(0xFF0F1923);
+  static const Color _surfaceDark = Color(0xFF121417); // neutral charcoal, not navy-tinted
   static const Color _cardLight = Color(0xFFFFFFFF);
-  static const Color _cardDark = Color(0xFF1C2A38);
+  static const Color _cardDark = Color(0xFF1E2124); // neutral, desaturated
 
   // ── Light theme ────────────────────────────────────────────────────────
   static ThemeData light() {
@@ -34,9 +34,11 @@ abstract class AppTheme {
       scaffoldBackgroundColor: _surfaceLight,
       cardTheme: CardThemeData(
         color: _cardLight,
-        elevation: 2,
+        elevation: 0,
+        surfaceTintColor: Colors.transparent,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+          side: BorderSide(color: Colors.grey.shade200),
         ),
         margin: const EdgeInsets.symmetric(
           horizontal: AppSpacing.md,
@@ -118,9 +120,11 @@ abstract class AppTheme {
       scaffoldBackgroundColor: _surfaceDark,
       cardTheme: CardThemeData(
         color: _cardDark,
-        elevation: 2,
+        elevation: 0,
+        surfaceTintColor: Colors.transparent,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+          side: BorderSide(color: Colors.white.withValues(alpha: 0.06)),
         ),
         margin: const EdgeInsets.symmetric(
           horizontal: AppSpacing.md,

@@ -198,6 +198,16 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
 
+            // City Pulse teaser — points to the live "what's happening
+            // around you" summary on the Explore screen; Home itself has
+            // no nearby-places fetch, so this stays a lightweight link.
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                child: _buildCityPulseTeaser(context),
+              ),
+            ),
+
             // Quick Hub: Multi-feature Modules
             SliverToBoxAdapter(
               child: Padding(
@@ -326,7 +336,7 @@ class _HomeScreenState extends State<HomeScreen> {
             children: [
               CircleAvatar(
                 radius: 18,
-                backgroundColor: AppTheme.primary.withValues(alpha: 0.12),
+                backgroundColor: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.06),
                 child: const Icon(Icons.luggage, color: AppTheme.primary, size: 20),
               ),
               const SizedBox(width: 10),
@@ -477,6 +487,29 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  Widget _buildCityPulseTeaser(BuildContext context) {
+    return InkWell(
+      onTap: () => Navigator.pushNamed(context, AppRoutes.discover),
+      borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 6),
+        child: Row(
+          children: [
+            const Icon(Icons.bolt, size: 16, color: AppTheme.secondary),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                "See what's trending nearby",
+                style: AppTypography.bodySmall.copyWith(fontWeight: FontWeight.w600),
+              ),
+            ),
+            const Icon(Icons.chevron_right, size: 18, color: Colors.grey),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildHubGrid(BuildContext context) {
     final hubs = [
       _HubTile(
@@ -487,11 +520,11 @@ class _HomeScreenState extends State<HomeScreen> {
         onTap: () => Navigator.pushNamed(context, AppRoutes.safety),
       ),
       _HubTile(
-        title: 'Group & Split',
-        subtitle: 'Shared expenses & settlement',
+        title: 'Trip Group',
+        subtitle: 'Members, invite code & join a trip',
         icon: Icons.group_outlined,
         color: Colors.teal,
-        onTap: () => Navigator.pushNamed(context, AppRoutes.expenses),
+        onTap: () => Navigator.pushNamed(context, AppRoutes.group),
       ),
       _HubTile(
         title: 'Trip Timeline',
@@ -571,6 +604,7 @@ class _ActionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return AppCard(
       padding: const EdgeInsets.all(AppSpacing.md),
       onTap: onTap,
@@ -579,7 +613,7 @@ class _ActionCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: accentColor.withValues(alpha: 0.12),
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.06),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(icon, color: accentColor, size: 28),

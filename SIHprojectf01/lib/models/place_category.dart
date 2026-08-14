@@ -251,6 +251,7 @@ enum UserIntent {
   all('✨', 'All'),
   eat('🍴', 'Eat'),
   explore('🏖️', 'Explore'),
+  nature('🌲', 'Nature'),
   relax('🚶', 'Relax'),
   fun('🎮', 'Fun'),
   photos('📸', 'Photos'),
@@ -279,19 +280,21 @@ enum UserIntent {
             category == PlaceCategory.cafe ||
             typeLower.any((t) => t.contains('restaurant') || t.contains('cafe') || t.contains('food'));
       case UserIntent.explore:
-        return category == PlaceCategory.beach ||
-            category == PlaceCategory.nature ||
-            category == PlaceCategory.attraction ||
+        return category == PlaceCategory.attraction ||
             category == PlaceCategory.viewpoint ||
             category == PlaceCategory.museum ||
             category == PlaceCategory.religious ||
-            typeLower.any((t) => t.contains('tourist') || t.contains('park') || t.contains('natural'));
+            typeLower.any((t) => t.contains('tourist'));
+      case UserIntent.nature:
+        return category == PlaceCategory.nature ||
+            category == PlaceCategory.park ||
+            category == PlaceCategory.beach ||
+            typeLower.any((t) => t.contains('natural') || t.contains('park'));
       case UserIntent.relax:
         return category == PlaceCategory.park ||
             category == PlaceCategory.beach ||
             category == PlaceCategory.viewpoint ||
-            category == PlaceCategory.cafe ||
-            category == PlaceCategory.nature;
+            category == PlaceCategory.cafe;
       case UserIntent.fun:
         return category == PlaceCategory.entertainment ||
             category == PlaceCategory.activity ||

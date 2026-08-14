@@ -4,6 +4,8 @@ import 'dart:convert';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 
+import '../config/app_config.dart';
+
 /// Structured result of a reverse-geocode lookup.
 class LocationAddress {
   final double latitude;
@@ -46,7 +48,7 @@ class LocationAddress {
 }
 
 class LocationService {
-  static const _apiKey = 'pk.33e21dba133230a48e766d76ebb6bf21';
+  static const _apiKey = AppConfig.locationIqApiKey;
 
   /// Fetches raw device GPS position using Geolocator.
   Future<Position> getCurrentPosition() async {

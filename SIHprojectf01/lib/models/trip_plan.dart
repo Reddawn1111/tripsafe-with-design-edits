@@ -46,6 +46,8 @@ class StopItem {
   bool isVisited;
   final String? userNotes;
   final String? optimizationHint;
+  final bool isSkipped;
+  final String? pinnedStartTime;
 
   StopItem({
     required this.id,
@@ -59,9 +61,12 @@ class StopItem {
     this.isVisited = false,
     this.userNotes,
     this.optimizationHint,
+    this.isSkipped = false,
+    this.pinnedStartTime,
   });
 
   StopItem copyWith({
+    Place? place,
     String? startTime,
     String? endTime,
     int? estimatedDurationMinutes,
@@ -71,10 +76,12 @@ class StopItem {
     bool? isVisited,
     String? userNotes,
     String? optimizationHint,
+    bool? isSkipped,
+    String? pinnedStartTime,
   }) {
     return StopItem(
       id: id,
-      place: place,
+      place: place ?? this.place,
       startTime: startTime ?? this.startTime,
       endTime: endTime ?? this.endTime,
       estimatedDurationMinutes:
@@ -87,6 +94,8 @@ class StopItem {
       isVisited: isVisited ?? this.isVisited,
       userNotes: userNotes ?? this.userNotes,
       optimizationHint: optimizationHint ?? this.optimizationHint,
+      isSkipped: isSkipped ?? this.isSkipped,
+      pinnedStartTime: pinnedStartTime ?? this.pinnedStartTime,
     );
   }
 }
@@ -105,8 +114,9 @@ class DayPlan {
     required this.stops,
   });
 
-  double get totalPlannedCost =>
-      stops.fold(0.0, (sum, stop) => sum + stop.estimatedCost);
+  double get totalPlannedCost => stops
+      .where((stop) => !stop.isSkipped)
+      .fold(0.0, (sum, stop) => sum + stop.estimatedCost);
 
   int get totalEstimatedDurationMinutes =>
       stops.fold(0, (sum, stop) => sum + stop.estimatedDurationMinutes + stop.travelTimeFromPreviousMinutes);

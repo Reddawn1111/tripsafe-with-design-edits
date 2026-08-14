@@ -1,3 +1,4 @@
+import '../models/city_pulse_summary.dart';
 import '../models/place.dart';
 import '../models/place_category.dart';
 import '../models/visit_record.dart';
@@ -60,6 +61,42 @@ class TravelInsightsService {
       trend: totalVisits > 50 ? '🔥 High traveller activity' : '📈 Growing interest',
       isDemoData: false,
       confidenceLevel: 'High (aggregate observations)',
+    );
+  }
+
+  /// Traveller-facing "City Pulse" summary — a friendly, city/area-level
+  /// view of the same aggregated data behind Travel Pulse, computed over
+  /// an already-loaded list of nearby places (no new network calls).
+  /// Returns null when there isn't enough data to summarize, mirroring the
+  /// "not enough traveller data yet" rule used elsewhere in this service.
+  CityPulseSummary? computeCityPulse(List<Place> places) {
+    if (places.length < 3) return null;
+
+    final visitsByCategory = <PlaceCategory, int>{};
+    for (final place in places) {
+      if (place.visitCount <= 0) continue;
+      visitsByCategory[place.category] =
+          (visitsByCategory[place.category] ?? 0) + place.visitCount;
+    }
+    if (visitsByCategory.isEmpty) return null;
+
+    final busiestEntry = visitsByCategory.entries
+        .reduce((a, b) => a.value >= b.value ? a : b);
+
+    final placesWithVisits = places.where((p) => p.visitCount > 0).toList()
+      ..sort((a, b) {
+        final byVisits = b.visitCount.compareTo(a.visitCount);
+        return byVisits != 0 ? byVisits : b.rating.compareTo(a.rating);
+      });
+    final trending = placesWithVisits.first;
+
+    return CityPulseSummary(
+      busiestCategoryLabel: busiestEntry.key.displayName,
+      busiestCategoryEmoji: busiestEntry.key.iconEmoji,
+      trendingPlaceName: trending.name,
+      trendingPlaceId: trending.id,
+      isDemoData: places.any((p) => p.dataSource.contains('DEMO DATA')),
+      sampleSize: placesWithVisits.length,
     );
   }
 

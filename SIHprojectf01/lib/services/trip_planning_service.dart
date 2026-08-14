@@ -202,6 +202,96 @@ class TripPlanningService extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Pins a stop's start time (e.g. from a time-picker edit) and
+  /// recalculates the day's route metrics so the pin persists.
+  void updateStopStartTime(int dayIndex, String stopId, String newStartTime) {
+    if (_activeTrip == null || dayIndex >= _activeTrip!.days.length) return;
+
+    final day = _activeTrip!.days[dayIndex];
+    final stops = day.stops
+        .map((s) => s.id == stopId ? s.copyWith(pinnedStartTime: newStartTime) : s)
+        .toList();
+
+    final recalculated = _routeOptimizer.calculateRouteMetrics(stops);
+    final updatedDays = List<DayPlan>.from(_activeTrip!.days);
+    updatedDays[dayIndex] = day.copyWith(stops: recalculated);
+
+    _activeTrip = _activeTrip!.copyWith(days: updatedDays);
+    notifyListeners();
+  }
+
+  /// Swaps a stop's place (e.g. "change place") and recalculates metrics.
+  void replaceStopPlace(int dayIndex, String stopId, Place newPlace) {
+    if (_activeTrip == null || dayIndex >= _activeTrip!.days.length) return;
+
+    final day = _activeTrip!.days[dayIndex];
+    final stops = day.stops
+        .map(
+          (s) => s.id == stopId
+              ? s.copyWith(
+                  place: newPlace,
+                  estimatedDurationMinutes: newPlace.typicalDwellMinutes,
+                  estimatedCost: newPlace.estimatedCost,
+                )
+              : s,
+        )
+        .toList();
+
+    final recalculated = _routeOptimizer.calculateRouteMetrics(stops);
+    final updatedDays = List<DayPlan>.from(_activeTrip!.days);
+    updatedDays[dayIndex] = day.copyWith(stops: recalculated);
+
+    _activeTrip = _activeTrip!.copyWith(days: updatedDays);
+    notifyListeners();
+  }
+
+  /// Inserts a new stop at an arbitrary position within a day (unlike
+  /// [addPlaceToTrip], which always appends).
+  void insertStopAt(int dayIndex, int position, Place place) {
+    if (_activeTrip == null || dayIndex >= _activeTrip!.days.length) return;
+
+    final day = _activeTrip!.days[dayIndex];
+    final stops = List<StopItem>.from(day.stops);
+    final insertAt = position.clamp(0, stops.length);
+
+    stops.insert(
+      insertAt,
+      StopItem(
+        id: 'stop_${DateTime.now().millisecondsSinceEpoch}',
+        place: place,
+        startTime: '12:00 PM',
+        endTime: '1:00 PM',
+        estimatedDurationMinutes: place.typicalDwellMinutes,
+        estimatedCost: place.estimatedCost,
+      ),
+    );
+
+    final recalculated = _routeOptimizer.calculateRouteMetrics(stops);
+    final updatedDays = List<DayPlan>.from(_activeTrip!.days);
+    updatedDays[dayIndex] = day.copyWith(stops: recalculated);
+
+    _activeTrip = _activeTrip!.copyWith(days: updatedDays);
+    notifyListeners();
+  }
+
+  /// Toggles a stop's skipped state. Skipped stops stay in the plan but are
+  /// excluded from [DayPlan.totalPlannedCost] and rendered struck-through.
+  void toggleSkipStop(int dayIndex, String stopId) {
+    if (_activeTrip == null || dayIndex >= _activeTrip!.days.length) return;
+
+    final day = _activeTrip!.days[dayIndex];
+    final stops = day.stops
+        .map((s) => s.id == stopId ? s.copyWith(isSkipped: !s.isSkipped) : s)
+        .toList();
+
+    final recalculated = _routeOptimizer.calculateRouteMetrics(stops);
+    final updatedDays = List<DayPlan>.from(_activeTrip!.days);
+    updatedDays[dayIndex] = day.copyWith(stops: recalculated);
+
+    _activeTrip = _activeTrip!.copyWith(days: updatedDays);
+    notifyListeners();
+  }
+
   /// Initial sample trip for demo & instant testing
   void _initSampleTrip() {
     final now = DateTime.now();

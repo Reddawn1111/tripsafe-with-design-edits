@@ -13,6 +13,7 @@ import '../screens/alternative_destination/alternative_destination_screen.dart';
 import '../screens/timeline/timeline_screen.dart';
 import '../screens/expenses/expenses_screen.dart';
 import '../screens/expenses/settlement_screen.dart';
+import '../screens/group/group_screen.dart';
 import '../screens/memories/memories_screen.dart';
 import '../screens/trip_summary/trip_summary_screen.dart';
 import '../screens/authority/authority_dashboard_screen.dart';
@@ -37,6 +38,7 @@ abstract class AppRoutes {
   static const String timeline = '/timeline';
   static const String expenses = '/expenses';
   static const String settlement = '/settlement';
+  static const String group = '/group';
   static const String memories = '/memories';
   static const String summary = '/summary';
   static const String authority = '/authority';
@@ -152,6 +154,12 @@ abstract class AppRouter {
       case AppRoutes.settlement:
         return _slide(
           SettlementScreen(tripId: args[RouteArgs.tripId] as String? ?? ''),
+          settings,
+        );
+
+      case AppRoutes.group:
+        return _slide(
+          GroupScreen(tripId: args[RouteArgs.tripId] as String? ?? ''),
           settings,
         );
 

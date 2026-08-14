@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tripsafe/app/app.dart';
+import 'package:tripsafe/utils/app_theme.dart';
 
 void main() {
   group('TripSafe Foundation & Navigation Tests', () {
@@ -26,6 +27,32 @@ void main() {
       expect(find.text('Explore Nearby'), findsWidgets);
       expect(find.text('Plan a Trip & Budget'), findsWidgets);
       expect(find.text('Active Journey & Dwell Tracker'), findsWidgets);
+    });
+
+    testWidgets('Renders under AppTheme.light() without exceptions', (
+      WidgetTester tester,
+    ) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.light(),
+          home: const Scaffold(body: Card(child: Text('theme smoke test'))),
+        ),
+      );
+      await tester.pump();
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('Renders under AppTheme.dark() without exceptions', (
+      WidgetTester tester,
+    ) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.dark(),
+          home: const Scaffold(body: Card(child: Text('theme smoke test'))),
+        ),
+      );
+      await tester.pump();
+      expect(tester.takeException(), isNull);
     });
   });
 }
