@@ -2,12 +2,12 @@ class AppConfig {
   AppConfig._();
 
   static const String geoapifyApiKey = String.fromEnvironment(
-    'GEOAPIFY_API_KEY',
+    '2e8d8eaf77084419b7bef47119acd27b',
     defaultValue: '',
   );
 
   static const String locationIqApiKey = String.fromEnvironment(
-    'LOCATIONIQ_API_KEY',
+    'pk.33e21dba133230a48e766d76ebb6bf21',
     defaultValue: '',
   );
 
