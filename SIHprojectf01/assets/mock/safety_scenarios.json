@@ -1,0 +1,18 @@
+[
+  {
+    "id": "scenario_001",
+    "name": "Flash Flood Warning",
+    "description": "Sudden heavy rainfall causes flash flood risk in the valley route.",
+    "riskLevel": "high",
+    "affectedArea": "Valley road to Manali",
+    "recommendedAction": "adapt_trip"
+  },
+  {
+    "id": "scenario_002",
+    "name": "Road Closure",
+    "description": "National highway temporarily closed due to landslide.",
+    "riskLevel": "moderate",
+    "affectedArea": "NH3 near Rohtang Pass",
+    "recommendedAction": "adapt_trip"
+  }
+]

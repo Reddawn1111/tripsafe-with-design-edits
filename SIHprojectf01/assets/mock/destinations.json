@@ -1,0 +1,29 @@
+[
+  {
+    "id": "dest_001",
+    "name": "Manali",
+    "state": "Himachal Pradesh",
+    "country": "India",
+    "tagline": "Snow peaks & mountain trails",
+    "safetyLevel": "moderate",
+    "imageUrl": null
+  },
+  {
+    "id": "dest_002",
+    "name": "Goa",
+    "state": "Goa",
+    "country": "India",
+    "tagline": "Sun, sand & vibrant culture",
+    "safetyLevel": "safe",
+    "imageUrl": null
+  },
+  {
+    "id": "dest_003",
+    "name": "Jaipur",
+    "state": "Rajasthan",
+    "country": "India",
+    "tagline": "The Pink City of forts and palaces",
+    "safetyLevel": "safe",
+    "imageUrl": null
+  }
+]

@@ -1,0 +1,23 @@
+{
+  "tripId": "demo_trip_001",
+  "destinationId": "dest_001",
+  "travelerName": "Demo Traveler",
+  "startDate": "2026-09-01",
+  "endDate": "2026-09-05",
+  "numberOfTravelers": 3,
+  "status": "planned",
+  "itinerary": [
+    {
+      "day": 1,
+      "date": "2026-09-01",
+      "title": "Arrival & Settle In",
+      "activities": ["Check in to hotel", "Local market stroll", "Welcome dinner"]
+    },
+    {
+      "day": 2,
+      "date": "2026-09-02",
+      "title": "Solang Valley",
+      "activities": ["Solang Valley visit", "Snow activities", "Bonfire evening"]
+    }
+  ]
+}
