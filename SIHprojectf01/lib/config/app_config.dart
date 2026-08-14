@@ -1,38 +1,26 @@
 class AppConfig {
   AppConfig._();
 
-  static const String geoapifyApiKey = String.fromEnvironment(
-    '2e8d8eaf77084419b7bef47119acd27b',
-    defaultValue: '',
-  );
+  // TODO: Replace these before final/public release.
+  static const String geoapifyApiKey =
+      '2e8d8eaf77084419b7bef47119acd27b';
 
-  static const String locationIqApiKey = String.fromEnvironment(
-    'pk.33e21dba133230a48e766d76ebb6bf21',
-    defaultValue: '',
-  );
+  static const String locationIqApiKey =
+      'pk.33e21dba133230a48e766d76ebb6bf21';
 
-  static const String supabaseUrl = String.fromEnvironment(
-    'SUPABASE_URL',
-    defaultValue: '',
-  );
+  static const String supabaseUrl = '';
 
-  static const String supabaseAnonKey = String.fromEnvironment(
-    'SUPABASE_ANON_KEY',
-    defaultValue: '',
-  );
+  static const String supabaseAnonKey = '';
 
-  static const String firebaseApiKey = String.fromEnvironment(
-    'FIREBASE_API_KEY',
-    defaultValue: '',
-  );
+  static bool get geoapifyConfigured =>
+      geoapifyApiKey.isNotEmpty &&
+      geoapifyApiKey != 'YOUR_GEOAPIFY_KEY_HERE';
 
-  static const String firebaseProjectId = String.fromEnvironment(
-    'FIREBASE_PROJECT_ID',
-    defaultValue: '',
-  );
+  static bool get locationIqConfigured =>
+      locationIqApiKey.isNotEmpty &&
+      locationIqApiKey != 'YOUR_LOCATIONIQ_KEY_HERE';
 
-  static const String aiApiKey = String.fromEnvironment(
-    'AI_API_KEY',
-    defaultValue: '',
-  );
+  static bool get supabaseConfigured =>
+      supabaseUrl.isNotEmpty &&
+      supabaseAnonKey.isNotEmpty;
 }
