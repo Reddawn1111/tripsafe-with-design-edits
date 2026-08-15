@@ -22,7 +22,7 @@ class UpdatedItineraryScreen extends StatelessWidget {
               padding: const EdgeInsets.all(AppSpacing.md),
               decoration: BoxDecoration(
                 color: AppTheme.success.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
                 border: Border.all(color: AppTheme.success.withValues(alpha: 0.3)),
               ),
               child: const Row(
@@ -36,7 +36,7 @@ class UpdatedItineraryScreen extends StatelessWidget {
                         Text('Itinerary Successfully Adapted!', style: TextStyle(fontWeight: FontWeight.bold)),
                         Text(
                           'Risky coastal stops were replaced with safe inland cultural destinations and sequence re-optimized.',
-                          style: TextStyle(fontSize: 12, color: Colors.grey),
+                          style: TextStyle(fontSize: 12, color: AppTheme.mutedDark),
                         ),
                       ],
                     ),

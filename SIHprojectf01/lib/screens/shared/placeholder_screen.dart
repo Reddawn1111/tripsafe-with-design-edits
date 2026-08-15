@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../utils/app_theme.dart';
+import '../../widgets/buttons.dart';
 import '../../widgets/common_widgets.dart';
 
 /// Temporary placeholder screen for screens not yet implemented.
@@ -32,36 +33,31 @@ class PlaceholderScreen extends StatelessWidget {
           padding: const EdgeInsets.all(AppSpacing.xl),
           child: Column(
             mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(
-                Icons.construction_rounded,
-                size: 72,
-                color: Theme.of(
-                  context,
-                ).colorScheme.primary.withValues(alpha: 0.4),
+              const IconChip(
+                icon: Icons.construction_rounded,
+                color: AppTheme.secondary,
+                size: 64,
               ),
               const SizedBox(height: AppSpacing.lg),
               Text(
-                screenName,
-                style: AppTypography.titleLarge,
-                textAlign: TextAlign.center,
+                screenName.toUpperCase(),
+                style: AppTypography.displayMedium.copyWith(fontSize: 26),
               ),
-              const SizedBox(height: AppSpacing.sm),
+              const SizedBox(height: 10),
               Text(
                 purpose,
                 style: AppTypography.bodyMedium.copyWith(
-                  color: Theme.of(
-                    context,
-                  ).colorScheme.onSurface.withValues(alpha: 0.6),
+                  color: AppTheme.muted(context),
                 ),
-                textAlign: TextAlign.center,
               ),
               const SizedBox(height: AppSpacing.xl),
               if (canPop)
-                OutlinedButton.icon(
+                SecondaryButton(
+                  label: 'Go back',
+                  icon: Icons.arrow_back,
                   onPressed: () => Navigator.of(context).pop(),
-                  icon: const Icon(Icons.arrow_back),
-                  label: const Text('Go Back'),
                 ),
             ],
           ),

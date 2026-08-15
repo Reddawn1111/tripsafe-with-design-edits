@@ -6,13 +6,11 @@ import '../../services/trip_planning_service.dart';
 import '../../utils/app_theme.dart';
 import '../../widgets/common_widgets.dart';
 
-/// TimelineScreen — Chronological journey progression with verified dwell
-/// events, across all trip days. Read-only: use the edit action in the
-/// AppBar to jump to ItineraryScreen for editing.
+/// TimelineScreen — chronological journey progression, dark theme.
+/// Read-only; the AppBar action jumps to ItineraryScreen for editing.
 ///
-/// Progress coloring (passed/current) is only meaningful for Day 1 — that's
-/// the only day JourneyTrackingService actually tracks live progress
-/// against. Later days are shown as planned stops without progress state.
+/// Progress colouring (passed/current) is only meaningful for Day 1 — the
+/// only day JourneyTrackingService tracks live progress against.
 class TimelineScreen extends StatelessWidget {
   final String tripId;
   const TimelineScreen({super.key, this.tripId = ''});
@@ -24,8 +22,8 @@ class TimelineScreen extends StatelessWidget {
     final activeTrip = planningService.activeTrip;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Journey Timeline'),
+      appBar: TripSafeAppBar(
+        title: 'Timeline',
         actions: [
           IconButton(
             icon: const Icon(Icons.edit_calendar),
@@ -35,25 +33,36 @@ class TimelineScreen extends StatelessWidget {
         ],
       ),
       body: activeTrip == null || activeTrip.days.isEmpty
-          ? const Center(child: Text('No active journey timeline to display.'))
+          ? const EmptyState(
+              message: 'No active journey timeline to display.',
+              icon: Icons.timeline,
+            )
           : ListView.builder(
-              padding: const EdgeInsets.all(AppSpacing.md),
+              physics: const BouncingScrollPhysics(),
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.md,
+                AppSpacing.sm,
+                AppSpacing.md,
+                AppSpacing.xxl,
+              ),
               itemCount: activeTrip.days.length,
               itemBuilder: (context, dIdx) {
                 final day = activeTrip.days[dIdx];
                 return Padding(
-                  padding: const EdgeInsets.only(bottom: AppSpacing.lg),
+                  padding: const EdgeInsets.only(bottom: 22),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Padding(
-                        padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-                        child: Text(
-                          day.title,
-                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-                        ),
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: SectionLabel(day.title),
                       ),
-                      ..._buildDayStops(day, dIdx == 0, journeyService),
+                      ..._buildDayStops(
+                        context,
+                        day,
+                        dIdx == 0,
+                        journeyService,
+                      ),
                     ],
                   ),
                 );
@@ -62,83 +71,128 @@ class TimelineScreen extends StatelessWidget {
     );
   }
 
-  List<Widget> _buildDayStops(DayPlan day, bool isTrackedDay, JourneyTrackingService journeyService) {
+  List<Widget> _buildDayStops(
+    BuildContext context,
+    DayPlan day,
+    bool isTrackedDay,
+    JourneyTrackingService journeyService,
+  ) {
     final stops = day.stops;
 
     return List.generate(stops.length, (index) {
       final stop = stops[index];
       final isPassed = isTrackedDay && index <= journeyService.currentStopIndex;
       final isCurrent = isTrackedDay && index == journeyService.currentStopIndex;
+      final dotColor = isPassed
+          ? (isCurrent ? AppTheme.primary : AppTheme.success)
+          : AppTheme.mutedDark;
 
       return IntrinsicHeight(
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Timeline indicator column
             Column(
               children: [
-                CircleAvatar(
-                  radius: 12,
-                  backgroundColor: isPassed
-                      ? (isCurrent ? AppTheme.secondary : AppTheme.success)
-                      : Colors.grey.shade300,
-                  child: Icon(
-                    isPassed ? (isCurrent ? Icons.near_me : Icons.check) : Icons.circle,
-                    color: Colors.white,
-                    size: 12,
+                Container(
+                  width: 22,
+                  height: 22,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: isPassed ? dotColor : Colors.transparent,
+                    border: isPassed
+                        ? null
+                        : Border.all(color: AppTheme.mutedDark, width: 1.5),
                   ),
+                  child: isPassed
+                      ? Icon(
+                          isCurrent ? Icons.near_me : Icons.check,
+                          size: 12,
+                          color: isCurrent
+                              ? AppTheme.onPrimary
+                              : AppTheme.onSuccess,
+                        )
+                      : null,
                 ),
                 if (index < stops.length - 1)
                   Expanded(
                     child: Container(
                       width: 2,
-                      color: isPassed ? AppTheme.success : Colors.grey.shade300,
+                      color: isPassed
+                          ? AppTheme.success.withValues(alpha: 0.5)
+                          : const Color(0x1FFFFFFF),
                     ),
                   ),
               ],
             ),
-            const SizedBox(width: AppSpacing.md),
-            // Card Content
+            const SizedBox(width: 14),
             Expanded(
               child: Padding(
-                padding: const EdgeInsets.only(bottom: AppSpacing.md),
+                padding: const EdgeInsets.only(bottom: 12),
                 child: AppCard(
-                  padding: const EdgeInsets.all(AppSpacing.md),
+                  accentBorder: isCurrent ? AppTheme.primary : null,
+                  padding: const EdgeInsets.all(14),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Expanded(
                             child: Text(
                               stop.place.name,
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 14,
-                                color: isCurrent ? AppTheme.secondary : null,
-                                decoration: stop.isSkipped ? TextDecoration.lineThrough : null,
+                              style: AppTypography.titleSmall.copyWith(
+                                color: isCurrent
+                                    ? AppTheme.primary
+                                    : stop.isSkipped
+                                        ? AppTheme.muted(context)
+                                        : AppTheme.onDark,
+                                decoration: stop.isSkipped
+                                    ? TextDecoration.lineThrough
+                                    : null,
                               ),
                             ),
                           ),
+                          const SizedBox(width: 10),
                           Text(
                             stop.startTime,
-                            style: const TextStyle(fontSize: 11, color: Colors.grey),
+                            style: AppTypography.caption.copyWith(
+                              fontSize: 11,
+                              color: AppTheme.muted(context),
+                            ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: 5),
                       Text(
-                        '${stop.place.category.displayName} · Dwell ${stop.estimatedDurationMinutes} min',
-                        style: const TextStyle(fontSize: 11, color: Colors.grey),
-                      ),
-                      if (isPassed && !isCurrent)
-                        const Padding(
-                          padding: EdgeInsets.only(top: 6),
-                          child: Text(
-                            '✓ Dwell verified & consented visit recorded',
-                            style: TextStyle(fontSize: 11, color: AppTheme.success, fontWeight: FontWeight.w600),
-                          ),
+                        '${stop.place.category.displayName} · dwell ${stop.estimatedDurationMinutes} min',
+                        style: AppTypography.caption.copyWith(
+                          fontSize: 11,
+                          color: AppTheme.muted(context),
                         ),
+                      ),
+                      if (isPassed && !isCurrent) ...[
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            const Icon(
+                              Icons.verified,
+                              size: 13,
+                              color: AppTheme.success,
+                            ),
+                            const SizedBox(width: 6),
+                            Expanded(
+                              child: Text(
+                                'Dwell verified · consented visit recorded',
+                                style: AppTypography.chipLabel.copyWith(
+                                  fontSize: 11,
+                                  color: AppTheme.success,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ],
                   ),
                 ),

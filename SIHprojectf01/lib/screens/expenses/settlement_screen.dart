@@ -36,7 +36,7 @@ class SettlementScreen extends StatelessWidget {
               padding: const EdgeInsets.all(AppSpacing.md),
               decoration: BoxDecoration(
                 color: AppTheme.secondary.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
                 border: Border.all(color: AppTheme.secondary.withValues(alpha: 0.3)),
               ),
               child: Row(
@@ -50,7 +50,7 @@ class SettlementScreen extends StatelessWidget {
                         Text('Fair Split Calculation', style: TextStyle(fontWeight: FontWeight.bold)),
                         Text(
                           'Debts are simplified so each friend makes the minimum number of direct transfers.',
-                          style: TextStyle(fontSize: 12, color: Colors.grey),
+                          style: TextStyle(fontSize: 12, color: AppTheme.mutedDark),
                         ),
                       ],
                     ),
@@ -79,7 +79,7 @@ class SettlementScreen extends StatelessWidget {
                       children: [
                         CircleAvatar(
                           backgroundColor: Colors.red.shade100,
-                          child: const Icon(Icons.arrow_forward, color: Colors.redAccent, size: 18),
+                          child: const Icon(Icons.arrow_forward, color: AppTheme.danger, size: 18),
                         ),
                         const SizedBox(width: AppSpacing.md),
                         Expanded(
@@ -90,7 +90,7 @@ class SettlementScreen extends StatelessWidget {
                                 '${s.fromMemberName} pays ${s.toMemberName}',
                                 style: const TextStyle(fontWeight: FontWeight.bold),
                               ),
-                              const Text('Direct peer-to-peer settlement', style: TextStyle(fontSize: 11, color: Colors.grey)),
+                              const Text('Direct peer-to-peer settlement', style: TextStyle(fontSize: 11, color: AppTheme.mutedDark)),
                             ],
                           ),
                         ),

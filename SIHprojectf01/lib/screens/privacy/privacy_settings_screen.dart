@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../utils/app_theme.dart';
+import '../../widgets/floating_nav_bar.dart';
 import '../../widgets/common_widgets.dart';
 
 /// PrivacySettingsScreen — User-facing consent controls, anonymization settings & privacy architecture (Step 13)
@@ -18,6 +19,8 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBody: true,
+      bottomNavigationBar: const FloatingNavBar(current: NavDestination.privacy),
       appBar: AppBar(
         title: const Text('Privacy & Consent Controls'),
       ),
@@ -29,7 +32,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
             padding: const EdgeInsets.all(AppSpacing.md),
             decoration: BoxDecoration(
               color: AppTheme.success.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+              borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
               border: Border.all(color: AppTheme.success.withValues(alpha: 0.3)),
             ),
             child: Row(
@@ -43,7 +46,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
                       const Text('Zero-Surveillance Architecture', style: TextStyle(fontWeight: FontWeight.bold)),
                       Text(
                         'TRIPSAFE strictly uses anonymized, aggregated signals. Your personal identity is never attached to movement records.',
-                        style: TextStyle(fontSize: 12, color: Colors.grey.shade800),
+                        style: TextStyle(fontSize: 12, color: AppTheme.subtleDark),
                       ),
                     ],
                   ),
@@ -102,7 +105,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: Colors.grey.shade100,
+                    color: const Color(0x0FFFFFFF),
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: const Column(
@@ -110,10 +113,10 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
                     children: [
                       Text('🚫 Strict Non-Collection Guarantees:', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
                       SizedBox(height: 4),
-                      Text('• No messages, chats, or keystrokes', style: TextStyle(fontSize: 11, color: Colors.grey)),
-                      Text('• No browser history or private searches', style: TextStyle(fontSize: 11, color: Colors.grey)),
-                      Text('• No photos, camera frames, or personal files', style: TextStyle(fontSize: 11, color: Colors.grey)),
-                      Text('• No passwords or clipboard data', style: TextStyle(fontSize: 11, color: Colors.grey)),
+                      Text('• No messages, chats, or keystrokes', style: TextStyle(fontSize: 11, color: AppTheme.mutedDark)),
+                      Text('• No browser history or private searches', style: TextStyle(fontSize: 11, color: AppTheme.mutedDark)),
+                      Text('• No photos, camera frames, or personal files', style: TextStyle(fontSize: 11, color: AppTheme.mutedDark)),
+                      Text('• No passwords or clipboard data', style: TextStyle(fontSize: 11, color: AppTheme.mutedDark)),
                     ],
                   ),
                 ),
@@ -126,7 +129,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
           Center(
             child: Text(
               'TripSafe v1.0.0+1 · SIH Mobility Intelligence System',
-              style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
+              style: TextStyle(fontSize: 11, color: AppTheme.mutedDark),
             ),
           ),
           const SizedBox(height: AppSpacing.xl),

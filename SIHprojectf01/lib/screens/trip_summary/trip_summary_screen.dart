@@ -5,7 +5,9 @@ import '../../utils/app_theme.dart';
 import '../../widgets/buttons.dart';
 import '../../widgets/common_widgets.dart';
 
-/// TripSummaryScreen — Post-trip statistics, mobility contribution recap & wrap-up
+/// TripSummaryScreen — post-trip recap, dark "accent panel" theme.
+/// Layout order unchanged: completion panel, metrics grid, contribution
+/// note, return home.
 class TripSummaryScreen extends StatelessWidget {
   final String tripId;
   const TripSummaryScreen({super.key, this.tripId = ''});
@@ -16,112 +18,179 @@ class TripSummaryScreen extends StatelessWidget {
     final activeTrip = planningService.activeTrip;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Trip Completion Summary'),
-      ),
+      appBar: const TripSafeAppBar(title: 'Trip summary'),
       body: SingleChildScrollView(
         physics: const BouncingScrollPhysics(),
-        padding: const EdgeInsets.all(AppSpacing.md),
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.md,
+          AppSpacing.sm,
+          AppSpacing.md,
+          AppSpacing.xxl,
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              padding: const EdgeInsets.all(AppSpacing.lg),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [AppTheme.primary, AppTheme.secondary],
-                ),
-                borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-              ),
+            AccentPanel(
+              color: AppTheme.success,
+              padding: const EdgeInsets.all(22),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Icon(Icons.celebration, color: Colors.white, size: 48),
-                  const SizedBox(height: AppSpacing.sm),
+                  const Icon(Icons.celebration, size: 34),
+                  const SizedBox(height: 14),
                   Text(
-                    'Journey Completed!',
-                    style: AppTypography.titleLarge.copyWith(color: Colors.white, fontWeight: FontWeight.bold),
+                    'JOURNEY\nCOMPLETED',
+                    style: AppTypography.displayLarge.copyWith(
+                      color: AppTheme.onSuccess,
+                      fontSize: 32,
+                      height: 1.0,
+                    ),
                   ),
+                  const SizedBox(height: 10),
                   Text(
                     activeTrip?.title ?? 'Coastal Trail & City Getaway',
-                    style: const TextStyle(color: Colors.white70, fontSize: 13),
+                    style: AppTypography.chipLabel.copyWith(
+                      fontSize: 12.5,
+                      color: AppTheme.onSuccess.withValues(alpha: 0.78),
+                    ),
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: AppSpacing.md),
-            Text('Trip Highlights & Metrics', style: AppTypography.titleSmall.copyWith(fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                Expanded(child: _buildMetricTile('Stops Visited', '${activeTrip?.totalStopsCount ?? 4}', Icons.pin_drop)),
-                const SizedBox(width: AppSpacing.sm),
-                Expanded(child: _buildMetricTile('Trip Days', '${activeTrip?.days.length ?? 1}', Icons.calendar_today)),
-              ],
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            Row(
-              children: [
-                Expanded(child: _buildMetricTile('Mobility Dwells', '4 Verified', Icons.timer)),
-                const SizedBox(width: AppSpacing.sm),
-                Expanded(child: _buildMetricTile('Safety Index', '100% Safe', Icons.shield)),
-              ],
-            ),
-            const SizedBox(height: AppSpacing.md),
 
-            // Mobility Contribution Note (Step 12 loop)
-            Container(
-              padding: const EdgeInsets.all(AppSpacing.md),
-              decoration: BoxDecoration(
-                color: Colors.blue.shade50,
-                borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-                border: Border.all(color: Colors.blue.shade200),
-              ),
+            const SizedBox(height: 22),
+            const SectionLabel('Highlights & metrics'),
+            const SizedBox(height: 11),
+            Row(
+              children: [
+                Expanded(
+                  child: _metricTile(
+                    context,
+                    'Stops visited',
+                    '${activeTrip?.totalStopsCount ?? 4}',
+                    Icons.pin_drop,
+                    AppTheme.primary,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: _metricTile(
+                    context,
+                    'Trip days',
+                    '${activeTrip?.days.length ?? 1}',
+                    Icons.calendar_today,
+                    AppTheme.secondary,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                Expanded(
+                  child: _metricTile(
+                    context,
+                    'Mobility dwells',
+                    '4 verified',
+                    Icons.timer,
+                    AppTheme.info,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: _metricTile(
+                    context,
+                    'Safety index',
+                    '100% safe',
+                    Icons.shield,
+                    AppTheme.success,
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 18),
+            AppCard(
+              accentBorder: AppTheme.info,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
                     children: [
-                      const Icon(Icons.volunteer_activism_outlined, color: AppTheme.primary, size: 20),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Travel Intelligence Contribution',
-                        style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blue.shade900),
+                      const Icon(
+                        Icons.volunteer_activism_outlined,
+                        color: AppTheme.info,
+                        size: 18,
+                      ),
+                      const SizedBox(width: 9),
+                      Expanded(
+                        child: Text(
+                          'Travel intelligence contribution',
+                          style: AppTypography.titleSmall,
+                        ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 6),
+                  const SizedBox(height: 9),
                   Text(
-                    'Your anonymous dwell events have helped update community visit hours and best time to visit recommendations for fellow travellers!',
-                    style: TextStyle(fontSize: 12, color: Colors.grey.shade900),
+                    'Your anonymous dwell events have helped update community visit '
+                    'hours and best-time-to-visit recommendations for fellow travellers.',
+                    style: AppTypography.bodySmall.copyWith(
+                      fontSize: 12,
+                      color: AppTheme.body(context),
+                    ),
                   ),
                 ],
               ),
             ),
 
-            const SizedBox(height: AppSpacing.lg),
-
+            const SizedBox(height: 22),
             PrimaryButton(
-              label: 'Return to Home',
+              label: 'Return to home',
               icon: Icons.home,
-              onPressed: () => Navigator.pushNamedAndRemoveUntil(context, AppRoutes.home, (_) => false),
+              onPressed: () => Navigator.pushNamedAndRemoveUntil(
+                context,
+                AppRoutes.home,
+                (_) => false,
+              ),
             ),
-            const SizedBox(height: AppSpacing.xxl),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildMetricTile(String label, String value, IconData icon) {
+  Widget _metricTile(
+    BuildContext context,
+    String label,
+    String value,
+    IconData icon,
+    Color color,
+  ) {
     return AppCard(
-      padding: const EdgeInsets.all(AppSpacing.md),
+      padding: const EdgeInsets.all(15),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, color: AppTheme.primary, size: 20),
-          const SizedBox(height: 6),
-          Text(value, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-          Text(label, style: const TextStyle(fontSize: 11, color: Colors.grey)),
+          Icon(icon, color: color, size: 19),
+          const SizedBox(height: 12),
+          Text(
+            value,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: AppTypography.titleLarge.copyWith(fontSize: 18),
+          ),
+          const SizedBox(height: 3),
+          Text(
+            label.toUpperCase(),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: AppTypography.chipLabel.copyWith(
+              fontSize: 9.5,
+              letterSpacing: 1,
+              color: AppTheme.muted(context),
+            ),
+          ),
         ],
       ),
     );

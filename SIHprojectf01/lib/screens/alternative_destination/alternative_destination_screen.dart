@@ -80,7 +80,7 @@ class AlternativeDestinationScreen extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 4),
-                  Text(dest['vibe']!, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                  Text(dest['vibe']!, style: const TextStyle(fontSize: 12, color: AppTheme.mutedDark)),
                   const SizedBox(height: 8),
                   Text('Highlights: ${dest['highlights']}', style: const TextStyle(fontSize: 12)),
                   const SizedBox(height: 12),

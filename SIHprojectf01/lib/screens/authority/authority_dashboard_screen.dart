@@ -33,9 +33,9 @@ class AuthorityDashboardScreen extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(AppSpacing.sm),
               decoration: BoxDecoration(
-                color: Colors.blue.shade50,
+                color: const Color(0x144DA3FF),
                 borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-                border: Border.all(color: Colors.blue.shade200),
+                border: Border.all(color: const Color(0x4D4DA3FF)),
               ),
               child: Row(
                 children: [
@@ -44,7 +44,7 @@ class AuthorityDashboardScreen extends StatelessWidget {
                   Expanded(
                     child: Text(
                       'Aggregated from consenting travellers · Strict k-anonymity (k ≥ 50) · No individual tracking',
-                      style: TextStyle(fontSize: 11, color: Colors.blue.shade900, fontWeight: FontWeight.w600),
+                      style: TextStyle(fontSize: 11, color: AppTheme.info, fontWeight: FontWeight.w600),
                     ),
                   ),
                 ],
@@ -75,7 +75,7 @@ class AuthorityDashboardScreen extends StatelessWidget {
                     '${(summary.peakCrowdIndex * 100).round()}%',
                     'Elevated weekend load',
                     Icons.trending_up,
-                    color: Colors.orange.shade800,
+                    color: AppTheme.warning,
                   ),
                 ),
               ],
@@ -128,7 +128,7 @@ class AuthorityDashboardScreen extends StatelessWidget {
           const SizedBox(height: 6),
           Text(value, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: color ?? AppTheme.primary)),
           Text(title, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
-          Text(sub, style: const TextStyle(fontSize: 10, color: Colors.grey)),
+          Text(sub, style: const TextStyle(fontSize: 10, color: AppTheme.mutedDark)),
         ],
       ),
     );
@@ -157,17 +157,17 @@ class AuthorityDashboardScreen extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 4),
-            Text('Average transit duration: ${c.averageTravelMinutes} min', style: const TextStyle(fontSize: 11, color: Colors.grey)),
+            Text('Average transit duration: ${c.averageTravelMinutes} min', style: const TextStyle(fontSize: 11, color: AppTheme.mutedDark)),
             const SizedBox(height: 6),
             Container(
               padding: const EdgeInsets.all(6),
               decoration: BoxDecoration(
-                color: Colors.grey.shade100,
+                color: const Color(0x0FFFFFFF),
                 borderRadius: BorderRadius.circular(4),
               ),
               child: Text(
                 '💡 Suggested Intervention: ${c.suggestedIntervention}',
-                style: const TextStyle(fontSize: 11, color: Colors.black87),
+                style: const TextStyle(fontSize: 11, color: AppTheme.subtleDark),
               ),
             ),
           ],
@@ -177,7 +177,7 @@ class AuthorityDashboardScreen extends StatelessWidget {
   }
 
   Widget _buildPriorityCard(BuildContext context, ExplainablePriorityItem item) {
-    final urgencyColor = item.urgency == 'High' ? Colors.redAccent : Colors.orangeAccent;
+    final urgencyColor = item.urgency == 'High' ? AppTheme.danger : Colors.orangeAccent;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.md),
@@ -204,7 +204,7 @@ class AuthorityDashboardScreen extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(item.title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                      Text('📍 ${item.locationName}', style: const TextStyle(fontSize: 11, color: Colors.grey)),
+                      Text('📍 ${item.locationName}', style: const TextStyle(fontSize: 11, color: AppTheme.mutedDark)),
                     ],
                   ),
                 ),
@@ -227,16 +227,16 @@ class AuthorityDashboardScreen extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: Colors.grey.shade50,
+                color: const Color(0x0AFFFFFF),
                 borderRadius: BorderRadius.circular(6),
-                border: Border.all(color: Colors.grey.shade200),
+                border: Border.all(color: AppTheme.borderDark),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Evidence: ${item.evidence}', style: const TextStyle(fontSize: 11, color: Colors.black87)),
+                  Text('Evidence: ${item.evidence}', style: const TextStyle(fontSize: 11, color: AppTheme.subtleDark)),
                   const SizedBox(height: 4),
-                  Text('Confidence: ${item.confidence}', style: const TextStyle(fontSize: 10, color: Colors.grey)),
+                  Text('Confidence: ${item.confidence}', style: const TextStyle(fontSize: 10, color: AppTheme.mutedDark)),
                 ],
               ),
             ),
@@ -261,17 +261,17 @@ class AuthorityDashboardScreen extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                   decoration: BoxDecoration(
-                    color: Colors.grey.shade200,
+                    color: AppTheme.borderDark,
                     borderRadius: BorderRadius.circular(4),
                   ),
                   child: Text(
                     item.classification.label,
-                    style: const TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Colors.black87),
+                    style: const TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: AppTheme.subtleDark),
                   ),
                 ),
                 Text(
                   'Status: ${item.validationStatus}',
-                  style: const TextStyle(fontSize: 10, fontStyle: FontStyle.italic, color: Colors.grey),
+                  style: const TextStyle(fontSize: 10, fontStyle: FontStyle.italic, color: AppTheme.mutedDark),
                 ),
               ],
             ),

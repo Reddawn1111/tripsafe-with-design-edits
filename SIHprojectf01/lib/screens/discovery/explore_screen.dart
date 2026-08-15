@@ -10,6 +10,7 @@ import '../../services/nearby_discovery_service.dart';
 import '../../services/recommendation_service.dart';
 import '../../services/travel_insights_service.dart';
 import '../../utils/app_theme.dart';
+import '../../widgets/floating_nav_bar.dart';
 import '../../widgets/buttons.dart';
 import '../../widgets/city_pulse_card.dart';
 import '../../widgets/common_widgets.dart';
@@ -194,24 +195,43 @@ class _ExploreScreenState extends State<ExploreScreen> {
         .toList();
 
     return Scaffold(
+      extendBody: true,
+      bottomNavigationBar: const FloatingNavBar(current: NavDestination.explore),
       appBar: AppBar(
-        titleSpacing: 0,
+        titleSpacing: AppSpacing.md,
+        toolbarHeight: 76,
+        backgroundColor: AppTheme.secondary,
+        foregroundColor: AppTheme.onSecondary,
+        iconTheme: const IconThemeData(color: AppTheme.onSecondary),
+        actionsIconTheme: const IconThemeData(color: AppTheme.onSecondary),
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text(
-              'TripSafe Explore',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+            Text(
+              'EXPLORE',
+              style: AppTypography.displayMedium.copyWith(
+                color: AppTheme.onSecondary,
+                fontSize: 26,
+              ),
             ),
+            const SizedBox(height: 4),
             Row(
               children: [
-                const Icon(Icons.location_on, size: 12, color: Colors.white70),
-                const SizedBox(width: 3),
+                Icon(
+                  Icons.location_on,
+                  size: 12,
+                  color: AppTheme.onSecondary.withValues(alpha: 0.7),
+                ),
+                const SizedBox(width: 4),
                 Flexible(
                   child: Text(
                     _currentAddress?.areaLabel ?? 'Current GPS Area',
-                    style: const TextStyle(fontSize: 12, color: Colors.white70),
                     overflow: TextOverflow.ellipsis,
+                    style: AppTypography.chipLabel.copyWith(
+                      fontSize: 11.5,
+                      color: AppTheme.onSecondary.withValues(alpha: 0.7),
+                    ),
                   ),
                 ),
               ],
@@ -227,7 +247,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
           IconButton(
             icon: Icon(
               _isDemoMode ? Icons.science : Icons.science_outlined,
-              color: _isDemoMode ? Colors.amberAccent : null,
+              color: _isDemoMode ? AppTheme.secondary : null,
             ),
             onPressed: () => _toggleDemoMode(!_isDemoMode),
             tooltip: _isDemoMode ? 'Exit Demo Mode' : 'Toggle Demo Mode',
@@ -245,21 +265,21 @@ class _ExploreScreenState extends State<ExploreScreen> {
             if (_isDemoMode)
               SliverToBoxAdapter(
                 child: Container(
-                  color: Colors.amber.shade800,
+                  color: AppTheme.secondary,
                   padding: const EdgeInsets.symmetric(
                     vertical: 6,
                     horizontal: AppSpacing.md,
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.info_outline, color: Colors.white, size: 16),
+                      const Icon(Icons.info_outline, color: AppTheme.onSecondary, size: 16),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
                           'DEMO DATA — simulated consenting travellers',
-                          style: AppTypography.caption.copyWith(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
+                          style: AppTypography.chipLabel.copyWith(
+                            color: AppTheme.onSecondary,
+                            fontSize: 11,
                           ),
                         ),
                       ),
@@ -267,10 +287,10 @@ class _ExploreScreenState extends State<ExploreScreen> {
                         onTap: () => _toggleDemoMode(false),
                         child: Text(
                           'Exit Demo',
-                          style: AppTypography.caption.copyWith(
-                            color: Colors.white,
+                          style: AppTypography.chipLabel.copyWith(
+                            color: AppTheme.onSecondary,
+                            fontSize: 11,
                             decoration: TextDecoration.underline,
-                            fontWeight: FontWeight.bold,
                           ),
                         ),
                       ),
@@ -297,23 +317,34 @@ class _ExploreScreenState extends State<ExploreScreen> {
                         _searchQuery = val;
                         _applyRecommendationFilter();
                       },
-                      decoration: InputDecoration(
-                        hintText: 'Search places, cafes, sunsets...',
-                        prefixIcon: const Icon(Icons.search, size: 20),
+                      style: AppTypography.bodyMedium.copyWith(
+                        color: AppTheme.onDark,
+                      ),
+                      decoration: const InputDecoration(
+                        hintText: 'Search places, cafes, sunsets…',
+                        prefixIcon: Icon(Icons.search, size: 19),
                         filled: true,
-                        fillColor: theme.colorScheme.surface,
-                        contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 16),
+                        fillColor: AppTheme.cardDark,
+                        contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 16),
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: Colors.grey.shade300),
+                          borderRadius: AppSpacing.pill,
+                          borderSide: BorderSide(color: AppTheme.borderDark),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: AppSpacing.pill,
+                          borderSide: BorderSide(color: AppTheme.borderDark),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: AppSpacing.pill,
+                          borderSide: BorderSide(color: AppTheme.secondary, width: 1.6),
                         ),
                       ),
                     ),
                     const SizedBox(height: AppSpacing.sm),
                     Text(
-                      "What's your vibe?",
-                      style: AppTypography.titleSmall.copyWith(
-                        fontWeight: FontWeight.bold,
+                      "WHAT'S YOUR VIBE?",
+                      style: AppTypography.sectionLabel.copyWith(
+                        color: AppTheme.mutedDark,
                       ),
                     ),
                   ],
@@ -371,7 +402,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
 
                   // 1. Recommended Around You (Multi-Factor Scored)
                   _buildSectionHeader(
-                    '⭐ Recommended Around You',
+                    'Recommended around you',
                     'Ranked by match, rating, proximity & dwell patterns',
                   ),
                   _buildRecommendedCarousel(),
@@ -381,7 +412,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                   // 2. Popular with TripSafe Travellers (Step 5)
                   if (popularWithTravellers.isNotEmpty) ...[
                     _buildSectionHeader(
-                      '🔥 Popular with TripSafe Travellers',
+                      'Popular with TripSafe travellers',
                       'Aggregated from verified dwell visits · k-anonymous',
                     ),
                     ...popularWithTravellers.map((p) => _buildPopularCard(p)),
@@ -391,7 +422,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                   // 3. Best Time to Visit (Step 6)
                   if (bestTimePlaces.isNotEmpty) ...[
                     _buildSectionHeader(
-                      '🌅 Best Time to Visit',
+                      'Best time to visit',
                       'Golden hour windows & quieter visitor hours',
                     ),
                     _buildBestTimeCarousel(bestTimePlaces),
@@ -408,12 +439,13 @@ class _ExploreScreenState extends State<ExploreScreen> {
 
                   // 5. Full Places Stream
                   _buildSectionHeader(
-                    '📍 All Nearby Spots (${_rankedPlaces.length})',
+                    'All nearby spots · ${_rankedPlaces.length}',
                     'Within 6 km search radius',
                   ),
                   ..._rankedPlaces.map((p) => _buildStandardPlaceTile(p)),
 
-                  const SizedBox(height: AppSpacing.xxl),
+                  // Clearance for the floating nav pill.
+                  const SizedBox(height: 104),
                 ]),
               ),
           ],
@@ -436,23 +468,10 @@ class _ExploreScreenState extends State<ExploreScreen> {
 
           return Padding(
             padding: const EdgeInsets.only(right: 8),
-            child: ChoiceChip(
-              label: Text(intent.chipText),
+            child: VibeChip(
+              label: intent.chipText,
               selected: isSelected,
-              onSelected: (_) => _onIntentChanged(intent),
-              selectedColor: AppTheme.primary,
-              backgroundColor: Theme.of(context).colorScheme.surface,
-              labelStyle: TextStyle(
-                color: isSelected ? Colors.white : Theme.of(context).colorScheme.onSurface,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                fontSize: 13,
-              ),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
-                side: BorderSide(
-                  color: isSelected ? AppTheme.primary : Colors.grey.shade300,
-                ),
-              ),
+              onTap: () => _onIntentChanged(intent),
             ),
           );
         },
@@ -467,12 +486,15 @@ class _ExploreScreenState extends State<ExploreScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            title,
-            style: AppTypography.titleSmall.copyWith(fontWeight: FontWeight.bold),
+            title.toUpperCase(),
+            style: AppTypography.sectionLabel.copyWith(
+              color: AppTheme.mutedDark,
+            ),
           ),
+          const SizedBox(height: 4),
           Text(
             subtitle,
-            style: AppTypography.caption.copyWith(color: Colors.grey.shade600),
+            style: AppTypography.caption.copyWith(color: AppTheme.mutedDark),
           ),
         ],
       ),
@@ -483,7 +505,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
     final topRecommendations = _rankedPlaces.take(6).toList();
 
     return SizedBox(
-      height: 230,
+      height: 252,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
@@ -504,47 +526,37 @@ class _ExploreScreenState extends State<ExploreScreen> {
                   Row(
                     children: [
                       Container(
-                        padding: const EdgeInsets.all(8),
+                        width: 42,
+                        height: 42,
+                        alignment: Alignment.center,
                         decoration: BoxDecoration(
-                          color: AppTheme.primary.withValues(alpha: 0.12),
-                          borderRadius: BorderRadius.circular(8),
+                          color: AppTheme.tint(AppTheme.primary, 0.12),
+                          borderRadius: BorderRadius.circular(13),
                         ),
                         child: Text(place.category.iconEmoji, style: const TextStyle(fontSize: 18)),
                       ),
-                      const SizedBox(width: 8),
+                      const SizedBox(width: 11),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
                               place.name,
-                              style: AppTypography.bodyMedium.copyWith(
-                                fontWeight: FontWeight.bold,
-                              ),
+                              style: AppTypography.titleSmall,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
+                            const SizedBox(height: 2),
                             Text(
-                              '${place.category.displayName} · 📍 ${place.distanceKm.toStringAsFixed(1)} km',
-                              style: AppTypography.caption.copyWith(color: Colors.grey),
+                              '${place.category.displayName} · ${place.distanceKm.toStringAsFixed(1)} km',
+                              style: AppTypography.caption.copyWith(color: AppTheme.mutedDark),
                             ),
                           ],
                         ),
                       ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: AppTheme.secondary.withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Text(
-                          '$matchPercent% match',
-                          style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                            color: AppTheme.secondary,
-                          ),
-                        ),
+                      StatusPill(
+                        label: '$matchPercent% match',
+                        color: AppTheme.success,
                       ),
                     ],
                   ),
@@ -555,7 +567,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                     width: double.infinity,
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      color: Colors.grey.shade100,
+                      color: const Color(0x0FFFFFFF),
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
@@ -564,7 +576,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                           : '⭐ Recommended based on proximity & ratings',
                       style: AppTypography.caption.copyWith(
                         fontWeight: FontWeight.w600,
-                        color: Colors.grey.shade800,
+                        color: AppTheme.subtleDark,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -579,11 +591,11 @@ class _ExploreScreenState extends State<ExploreScreen> {
                     children: [
                       Row(
                         children: [
-                          const Icon(Icons.timer_outlined, size: 14, color: Colors.grey),
+                          const Icon(Icons.timer_outlined, size: 14, color: AppTheme.mutedDark),
                           const SizedBox(width: 4),
                           Text(
                             '${place.typicalDwellMinutes}m stay',
-                            style: AppTypography.caption.copyWith(color: Colors.grey),
+                            style: AppTypography.caption.copyWith(color: AppTheme.mutedDark),
                           ),
                         ],
                       ),
@@ -608,25 +620,43 @@ class _ExploreScreenState extends State<ExploreScreen> {
                   const SizedBox(height: 6),
 
                   // Add to Itinerary button
-                  SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton.icon(
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 4),
-                        visualDensity: VisualDensity.compact,
-                      ),
-                      icon: const Icon(Icons.add, size: 16),
-                      label: const Text('Add to Trip', style: TextStyle(fontSize: 12)),
-                      onPressed: () {
-                        ItineraryService.instance.addPlaceToItinerary(place);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('${place.name} added to your plan!'),
-                            duration: const Duration(seconds: 2),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: () {
+                            ItineraryService.instance.addPlaceToItinerary(place);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('${place.name} added to your plan'),
+                                duration: const Duration(seconds: 2),
+                              ),
+                            );
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(vertical: 9),
+                            alignment: Alignment.center,
+                            decoration: const BoxDecoration(
+                              color: AppTheme.onDark,
+                              borderRadius: AppSpacing.pill,
+                            ),
+                            child: Text(
+                              'Add to Trip',
+                              style: AppTypography.chipLabel.copyWith(
+                                color: AppTheme.surfaceDark,
+                                fontSize: 12,
+                              ),
+                            ),
                           ),
-                        );
-                      },
-                    ),
+                        ),
+                      ),
+                      const SizedBox(width: 9),
+                      CircleIconButton(
+                        icon: Icons.arrow_outward,
+                        size: 32,
+                        onPressed: () => PlaceDetailSheet.show(context, place),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -646,32 +676,37 @@ class _ExploreScreenState extends State<ExploreScreen> {
         child: Row(
           children: [
             Container(
-              padding: const EdgeInsets.all(10),
+              width: 48,
+              height: 48,
+              alignment: Alignment.center,
               decoration: BoxDecoration(
-                color: Colors.orange.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(10),
+                color: AppTheme.tint(AppTheme.secondary, 0.12),
+                borderRadius: BorderRadius.circular(14),
               ),
-              child: const Text('🔥', style: TextStyle(fontSize: 20)),
+              child: Text(place.category.iconEmoji, style: const TextStyle(fontSize: 20)),
             ),
-            const SizedBox(width: AppSpacing.sm),
+            const SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     place.name,
-                    style: AppTypography.bodyMedium.copyWith(fontWeight: FontWeight.bold),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppTypography.titleSmall,
                   ),
+                  const SizedBox(height: 3),
                   Text(
                     place.visitCount > 0
                         ? '${place.visitCount} TripSafe visits · Typical stay: ${place.typicalDwellMinutes} min'
                         : '${place.reviewCount} public reviews · Popular nearby',
-                    style: AppTypography.caption.copyWith(color: Colors.grey.shade700),
+                    style: AppTypography.caption.copyWith(color: AppTheme.mutedDark),
                   ),
                   if (place.busyHours != null)
                     Text(
-                      '🕐 Usually busiest: ${place.busyHours}',
-                      style: AppTypography.caption.copyWith(color: Colors.deepOrange, fontSize: 11),
+                      'Usually busiest: ${place.busyHours}',
+                      style: AppTypography.caption.copyWith(color: AppTheme.warning, fontSize: 11),
                     ),
                 ],
               ),
@@ -713,16 +748,16 @@ class _ExploreScreenState extends State<ExploreScreen> {
                 children: [
                   Text(
                     place.name,
-                    style: AppTypography.bodySmall.copyWith(fontWeight: FontWeight.bold),
+                    style: AppTypography.titleSmall.copyWith(fontSize: 13.5),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 6),
                   Text(
                     'Best for: ${guide['bestFor']}',
-                    style: AppTypography.caption.copyWith(
-                      color: AppTheme.primary,
-                      fontWeight: FontWeight.w600,
+                    style: AppTypography.chipLabel.copyWith(
+                      color: AppTheme.secondary,
+                      fontSize: 11,
                     ),
                   ),
                   Text(
@@ -732,7 +767,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                   const Spacer(),
                   Text(
                     'Typical stay: ${guide['typicalStay']}',
-                    style: AppTypography.caption.copyWith(color: Colors.grey, fontSize: 10),
+                    style: AppTypography.caption.copyWith(color: AppTheme.mutedDark, fontSize: 10),
                   ),
                 ],
               ),
@@ -747,39 +782,38 @@ class _ExploreScreenState extends State<ExploreScreen> {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: AppTheme.secondary,
-        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+        color: AppTheme.primary,
+        borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
       ),
       child: Row(
         children: [
-          const Icon(Icons.auto_awesome, color: Colors.white, size: 28),
+          const Icon(Icons.auto_awesome, color: AppTheme.onPrimary, size: 26),
           const SizedBox(width: AppSpacing.md),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Build a Trip Plan & Budget',
+                  'BUILD A PLAN FROM THESE',
                   style: AppTypography.titleSmall.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
+                    color: AppTheme.onPrimary,
+                    fontSize: 15,
                   ),
                 ),
+                const SizedBox(height: 3),
                 Text(
                   'Sequenced itinerary with real nearby places & cost tracker',
-                  style: AppTypography.caption.copyWith(color: Colors.white70),
+                  style: AppTypography.caption.copyWith(
+                    color: AppTheme.onPrimary.withValues(alpha: 0.75),
+                  ),
                 ),
               ],
             ),
           ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.white,
-              foregroundColor: AppTheme.secondary,
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            ),
+          PillButton(
+            label: 'Start',
+            color: AppTheme.onPrimary,
             onPressed: () => Navigator.pushNamed(context, AppRoutes.plan),
-            child: const Text('Start', style: TextStyle(fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -794,27 +828,36 @@ class _ExploreScreenState extends State<ExploreScreen> {
         onTap: () => PlaceDetailSheet.show(context, place),
         child: Row(
           children: [
-            CircleAvatar(
-              backgroundColor: AppTheme.primary.withValues(alpha: 0.1),
-              child: Text(place.category.iconEmoji),
+            Container(
+              width: 42,
+              height: 42,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: AppTheme.tint(AppTheme.primary, 0.12),
+                borderRadius: BorderRadius.circular(13),
+              ),
+              child: Text(place.category.iconEmoji, style: const TextStyle(fontSize: 17)),
             ),
-            const SizedBox(width: AppSpacing.sm),
+            const SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     place.name,
-                    style: AppTypography.bodyMedium.copyWith(fontWeight: FontWeight.bold),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppTypography.titleSmall,
                   ),
+                  const SizedBox(height: 3),
                   Text(
-                    '${place.category.displayName} · 📍 ${place.distanceKm.toStringAsFixed(1)} km away',
-                    style: AppTypography.caption.copyWith(color: Colors.grey),
+                    '${place.category.displayName} · ${place.distanceKm.toStringAsFixed(1)} km away',
+                    style: AppTypography.caption.copyWith(color: AppTheme.mutedDark),
                   ),
                   if (place.address.isNotEmpty)
                     Text(
                       place.address,
-                      style: AppTypography.caption.copyWith(color: Colors.grey.shade600, fontSize: 11),
+                      style: AppTypography.caption.copyWith(color: AppTheme.mutedDark, fontSize: 11),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),

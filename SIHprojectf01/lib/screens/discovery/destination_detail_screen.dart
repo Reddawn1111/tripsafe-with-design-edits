@@ -29,7 +29,7 @@ class DestinationDetailScreen extends StatelessWidget {
                 children: [
                   Text(destTitle, style: AppTypography.titleLarge.copyWith(fontWeight: FontWeight.bold)),
                   const SizedBox(height: 4),
-                  const Text('South India Coastal Heritage & Sunset Promenade', style: TextStyle(color: Colors.grey)),
+                  const Text('South India Coastal Heritage & Sunset Promenade', style: TextStyle(color: AppTheme.mutedDark)),
                   const SizedBox(height: 12),
                   Row(
                     children: [

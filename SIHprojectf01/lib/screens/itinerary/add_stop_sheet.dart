@@ -90,7 +90,7 @@ class _AddStopSheetState extends State<AddStopSheet> {
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: Colors.grey.shade400,
+                  color: AppTheme.mutedDark,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -109,7 +109,7 @@ class _AddStopSheetState extends State<AddStopSheet> {
                     : ListView.separated(
                         controller: scrollController,
                         itemCount: _candidates.length,
-                        separatorBuilder: (_, _) => Divider(color: Colors.grey.shade200),
+                        separatorBuilder: (_, _) => Divider(color: AppTheme.borderDark),
                         itemBuilder: (context, index) {
                           final place = _candidates[index];
                           return ListTile(

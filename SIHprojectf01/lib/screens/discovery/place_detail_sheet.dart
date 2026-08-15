@@ -107,7 +107,7 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
                 height: 4,
                 margin: const EdgeInsets.only(bottom: AppSpacing.md),
                 decoration: BoxDecoration(
-                  color: Colors.grey.shade400,
+                  color: AppTheme.mutedDark,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -115,7 +115,7 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
 
             // Header Banner
             ClipRRect(
-              borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+              borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
               child: Container(
                 height: 140,
                 width: double.infinity,
@@ -188,7 +188,7 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
                       const SizedBox(width: 4),
                       Text(
                         '(${place.reviewCountLabel})',
-                        style: AppTypography.caption.copyWith(color: Colors.grey),
+                        style: AppTypography.caption.copyWith(color: AppTheme.mutedDark),
                       ),
                     ],
                   ),
@@ -207,14 +207,14 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                     decoration: BoxDecoration(
-                      color: Colors.grey.shade200,
+                      color: AppTheme.borderDark,
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: Text(
                       place.priceDisplay,
                       style: AppTypography.caption.copyWith(
                         fontWeight: FontWeight.w600,
-                        color: Colors.black87,
+                        color: AppTheme.subtleDark,
                       ),
                     ),
                   ),
@@ -236,7 +236,7 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
                 width: double.infinity,
                 padding: const EdgeInsets.all(AppSpacing.sm),
                 decoration: BoxDecoration(
-                  color: Colors.grey.shade100,
+                  color: const Color(0x0FFFFFFF),
                   borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
                 ),
                 child: Row(
@@ -248,7 +248,7 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
                         place.recommendationReason,
                         style: AppTypography.caption.copyWith(
                           fontWeight: FontWeight.w600,
-                          color: Colors.grey.shade800,
+                          color: AppTheme.subtleDark,
                         ),
                       ),
                     ),
@@ -262,12 +262,12 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Icon(Icons.place_outlined, size: 18, color: Colors.grey),
+                const Icon(Icons.place_outlined, size: 18, color: AppTheme.mutedDark),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
                     place.address,
-                    style: AppTypography.bodySmall.copyWith(color: Colors.grey.shade700),
+                    style: AppTypography.bodySmall.copyWith(color: AppTheme.mutedDark),
                   ),
                 ),
               ],
@@ -275,11 +275,11 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
             const SizedBox(height: 4),
             Row(
               children: [
-                const Icon(Icons.verified_outlined, size: 14, color: Colors.grey),
+                const Icon(Icons.verified_outlined, size: 14, color: AppTheme.mutedDark),
                 const SizedBox(width: 6),
                 Text(
                   'Source: ${place.dataSource}',
-                  style: AppTypography.caption.copyWith(color: Colors.grey, fontSize: 10),
+                  style: AppTypography.caption.copyWith(color: AppTheme.mutedDark, fontSize: 10),
                 ),
               ],
             ),
@@ -347,7 +347,7 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
                   decoration: BoxDecoration(
-                    color: Colors.grey.shade200,
+                    color: AppTheme.borderDark,
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
@@ -355,7 +355,7 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
                     style: AppTypography.caption.copyWith(
                       fontSize: 8,
                       fontWeight: FontWeight.bold,
-                      color: Colors.grey.shade700,
+                      color: AppTheme.mutedDark,
                     ),
                   ),
                 ),
@@ -366,7 +366,7 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
           if (stats == null)
             Text(
               'Not enough traveller data yet — be the first to log a consented visit here.',
-              style: AppTypography.caption.copyWith(color: Colors.grey.shade600),
+              style: AppTypography.caption.copyWith(color: AppTheme.mutedDark),
             )
           else
             Row(
@@ -380,12 +380,12 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
                 ),
                 Text(
                   '🕐 ${stats.busiestTimeWindow}',
-                  style: AppTypography.caption.copyWith(color: Colors.grey.shade600),
+                  style: AppTypography.caption.copyWith(color: AppTheme.mutedDark),
                 ),
               ],
             ),
           const SizedBox(height: 6),
-          Divider(height: 1, color: Colors.grey.shade200),
+          Divider(height: 1, color: AppTheme.borderDark),
           const SizedBox(height: 6),
           Row(
             children: [

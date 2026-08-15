@@ -9,9 +9,9 @@ import '../../widgets/buttons.dart';
 import '../../widgets/common_widgets.dart';
 import 'add_stop_sheet.dart';
 
-/// ItineraryScreen — Displays and edits the user's trip itinerary and day
-/// route stops. The canonical, routed itinerary editing surface: reorder,
-/// edit time, change place, skip, add, and delete stops all live here.
+/// ItineraryScreen — trip itinerary and route editing, dark "accent panel"
+/// theme. All editing behaviour is unchanged: reorder, edit time, change
+/// place, insert, skip, delete.
 class ItineraryScreen extends StatelessWidget {
   final String tripId;
   const ItineraryScreen({super.key, this.tripId = ''});
@@ -23,8 +23,8 @@ class ItineraryScreen extends StatelessWidget {
     final planningService = TripPlanningService.instance;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Trip Itinerary & Route'),
+      appBar: TripSafeAppBar(
+        title: 'Itinerary',
         actions: [
           IconButton(
             icon: const Icon(Icons.edit_calendar),
@@ -41,49 +41,50 @@ class ItineraryScreen extends StatelessWidget {
           if (trip == null || trip.days.isEmpty || trip.totalStopsCount == 0) {
             return EmptyState(
               message:
-                  'Your trip itinerary is currently empty.\nExplore nearby places or generate a budget plan!',
+                  'Your trip itinerary is empty.\nExplore nearby places or generate a budget plan.',
               icon: Icons.map_outlined,
-              actionLabel: 'Explore Nearby Places',
+              actionLabel: 'Explore nearby places',
               action: () => Navigator.of(context).pushNamed(AppRoutes.discover),
             );
           }
 
           return SingleChildScrollView(
             physics: const BouncingScrollPhysics(),
-            padding: const EdgeInsets.all(AppSpacing.md),
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.md,
+              AppSpacing.sm,
+              AppSpacing.md,
+              AppSpacing.xxl,
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Trip Header Card
                 _buildTripHeader(context, trip),
-
-                const SizedBox(height: AppSpacing.md),
-
-                // Days and Stops
+                const SizedBox(height: 18),
                 ...trip.days.asMap().entries.map((entry) {
                   final dIdx = entry.key;
                   final day = entry.value;
-                  return _buildDayCard(context, planningService, trip, day, dIdx);
+                  return _buildDayCard(
+                    context,
+                    planningService,
+                    trip,
+                    day,
+                    dIdx,
+                  );
                 }),
-
-                const SizedBox(height: AppSpacing.lg),
-
-                // Action Buttons
+                const SizedBox(height: 8),
                 PrimaryButton(
-                  label: 'Start Active Journey',
+                  label: 'Start active journey',
                   icon: Icons.navigation_outlined,
-                  onPressed: () => Navigator.pushNamed(context, AppRoutes.journey),
+                  onPressed: () =>
+                      Navigator.pushNamed(context, AppRoutes.journey),
                 ),
-                const SizedBox(height: AppSpacing.sm),
-                OutlinedButton.icon(
+                const SizedBox(height: 11),
+                SecondaryButton(
+                  label: 'View group & invite code',
+                  icon: Icons.group_outlined,
                   onPressed: () => Navigator.pushNamed(context, AppRoutes.group),
-                  icon: const Icon(Icons.group_outlined),
-                  label: const Text('View Group & Invite Code'),
-                  style: OutlinedButton.styleFrom(
-                    minimumSize: const Size(double.infinity, 48),
-                  ),
                 ),
-                const SizedBox(height: AppSpacing.xxl),
               ],
             ),
           );
@@ -92,56 +93,81 @@ class ItineraryScreen extends StatelessWidget {
     );
   }
 
+  // ── Trip header — the rust accent panel ────────────────────────────────
   Widget _buildTripHeader(BuildContext context, TripPlan trip) {
-    return AppCard(
-      padding: const EdgeInsets.all(AppSpacing.md),
+    const ink = AppTheme.onPrimary;
+    final within = trip.remainingBudget >= 0;
+
+    return AccentPanel(
+      color: AppTheme.primary,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      trip.title,
-                      style: AppTypography.titleMedium.copyWith(fontWeight: FontWeight.bold),
-                    ),
-                    Text(
-                      '${trip.destinationName} · ${trip.members.length} Travellers',
-                      style: AppTypography.caption.copyWith(color: Colors.grey.shade600),
-                    ),
-                  ],
+                child: Text(
+                  trip.title.toUpperCase(),
+                  style: AppTypography.displayMedium.copyWith(
+                    color: ink,
+                    fontSize: 25,
+                    height: 1.02,
+                  ),
                 ),
               ),
+              const SizedBox(width: 12),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: AppTheme.primary.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(12),
+                padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 6),
+                decoration: const BoxDecoration(
+                  color: ink,
+                  borderRadius: AppSpacing.pill,
                 ),
                 child: Text(
-                  'Code: ${trip.inviteCode}',
-                  style: AppTypography.caption.copyWith(
-                    fontWeight: FontWeight.bold,
+                  trip.inviteCode,
+                  style: AppTypography.chipLabel.copyWith(
                     color: AppTheme.primary,
+                    fontSize: 10.5,
                   ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: AppSpacing.md),
+          const SizedBox(height: 12),
+          Text(
+            '${trip.destinationName} · ${trip.days.length} days · ${trip.members.length} travellers',
+            style: AppTypography.chipLabel.copyWith(
+              color: ink.withValues(alpha: 0.75),
+              fontSize: 12,
+            ),
+          ),
+          const SizedBox(height: 16),
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _buildStat('Total Stops', '${trip.totalStopsCount}'),
-              _buildStat('Total Budget', '₹${trip.totalBudget.round()}'),
-              _buildStat('Planned Cost', '₹${trip.totalSpentOrPlanned.round()}'),
-              _buildStat(
-                'Remaining',
-                '₹${trip.remainingBudget.round()}',
-                color: trip.remainingBudget >= 0 ? AppTheme.success : AppTheme.error,
+              Expanded(
+                child: _panelStat('Stops', '${trip.totalStopsCount}'),
+              ),
+              const SizedBox(width: 7),
+              Expanded(
+                child: _panelStat('Budget', '₹${trip.totalBudget.round()}'),
+              ),
+              const SizedBox(width: 7),
+              Expanded(
+                child: _panelStat(
+                  'Planned',
+                  '₹${trip.totalSpentOrPlanned.round()}',
+                ),
+              ),
+              const SizedBox(width: 7),
+              Expanded(
+                child: _panelStat(
+                  'Left',
+                  '₹${trip.remainingBudget.round()}',
+                  dark: true,
+                  valueColor: within
+                      ? const Color(0xFF5FD48F)
+                      : const Color(0xFFFF8A6B),
+                ),
               ),
             ],
           ),
@@ -150,23 +176,48 @@ class ItineraryScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildStat(String label, String value, {Color? color}) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(label, style: const TextStyle(fontSize: 11, color: Colors.grey)),
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.bold,
-            color: color,
+  Widget _panelStat(
+    String label,
+    String value, {
+    bool dark = false,
+    Color? valueColor,
+  }) {
+    const ink = AppTheme.onPrimary;
+    return Container(
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: dark ? ink : ink.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            value,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: AppTypography.titleMedium.copyWith(
+              color: valueColor ?? ink,
+              fontSize: 16,
+            ),
           ),
-        ),
-      ],
+          const SizedBox(height: 2),
+          Text(
+            label.toUpperCase(),
+            style: AppTypography.chipLabel.copyWith(
+              fontSize: 8.5,
+              letterSpacing: 0.9,
+              color: dark
+                  ? const Color(0x99F2F0EA)
+                  : ink.withValues(alpha: 0.65),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
+  // ── Day card ───────────────────────────────────────────────────────────
   Widget _buildDayCard(
     BuildContext context,
     TripPlanningService service,
@@ -176,192 +227,306 @@ class ItineraryScreen extends StatelessWidget {
   ) {
     final conflicts = _conflictService.detectConflicts(day);
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: AppSpacing.md),
-      decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-        border: Border.all(color: Colors.grey.shade300),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
-            decoration: BoxDecoration(
-              color: Colors.grey.shade100,
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(AppSpacing.radiusMd)),
-            ),
-            child: Row(
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: AppCard(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
               children: [
-                Text(
-                  day.title,
-                  style: AppTypography.bodyMedium.copyWith(fontWeight: FontWeight.bold),
+                Container(
+                  width: 32,
+                  height: 32,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: AppTheme.primary,
+                    borderRadius: BorderRadius.circular(11),
+                  ),
+                  child: Text(
+                    '${dIdx + 1}',
+                    style: AppTypography.chipLabel.copyWith(
+                      color: AppTheme.onPrimary,
+                      fontSize: 14,
+                    ),
+                  ),
                 ),
-                const Spacer(),
-                IconButton(
-                  icon: const Icon(Icons.route, size: 20, color: AppTheme.secondary),
-                  tooltip: 'Auto-optimize route order',
+                const SizedBox(width: 11),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        day.title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppTypography.titleSmall.copyWith(fontSize: 15),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        '${day.stops.length} stops',
+                        style: AppTypography.caption.copyWith(
+                          fontSize: 10.5,
+                          color: AppTheme.muted(context),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                PillButton(
+                  label: 'Optimize',
+                  icon: Icons.route,
+                  dense: true,
+                  color: AppTheme.secondary,
                   onPressed: () {
                     service.optimizeDayRoute(dIdx);
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Route optimized for minimal travel time!')),
+                      const SnackBar(
+                        content: Text('Route optimized for minimal travel time'),
+                      ),
                     );
                   },
                 ),
               ],
             ),
-          ),
 
-          if (conflicts.isNotEmpty) _buildConflictBanner(conflicts),
+            if (conflicts.isNotEmpty) ...[
+              const SizedBox(height: 14),
+              _buildConflictBanner(context, conflicts),
+            ],
 
-          ReorderableListView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: day.stops.length,
-            onReorder: (oldIndex, newIndex) => service.reorderStops(dIdx, oldIndex, newIndex),
-            itemBuilder: (context, sIdx) {
-              final stop = day.stops[sIdx];
-              final isFirst = sIdx == 0;
+            const SizedBox(height: 14),
+            ReorderableListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: day.stops.length,
+              onReorder: (oldIndex, newIndex) =>
+                  service.reorderStops(dIdx, oldIndex, newIndex),
+              itemBuilder: (context, sIdx) {
+                final stop = day.stops[sIdx];
+                final isFirst = sIdx == 0;
+                final struck = stop.isVisited || stop.isSkipped;
 
-              return Padding(
-                key: ValueKey(stop.id),
-                padding: const EdgeInsets.all(AppSpacing.sm),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (!isFirst)
-                      Padding(
-                        padding: const EdgeInsets.only(left: 14, bottom: 6),
-                        child: Row(
-                          children: [
-                            const Icon(Icons.directions_car, size: 14, color: Colors.grey),
-                            const SizedBox(width: 6),
-                            Text(
-                              '${stop.distanceFromPreviousKm.toStringAsFixed(1)} km · ~${stop.travelTimeFromPreviousMinutes} min transit',
-                              style: const TextStyle(fontSize: 11, color: Colors.grey),
-                            ),
-                          ],
-                        ),
-                      ),
-                    Row(
-                      children: [
-                        CircleAvatar(
-                          radius: 14,
-                          backgroundColor: stop.isVisited
-                              ? AppTheme.success
-                              : AppTheme.primary.withValues(alpha: 0.12),
-                          child: Text(
-                            stop.isVisited ? '✓' : '${sIdx + 1}',
-                            style: TextStyle(
-                              fontSize: 11,
-                              color: stop.isVisited ? Colors.white : AppTheme.primary,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                return Padding(
+                  key: ValueKey(stop.id),
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (!isFirst)
+                        Padding(
+                          padding: const EdgeInsets.only(left: 6, bottom: 9),
+                          child: Row(
                             children: [
-                              Row(
-                                children: [
-                                  Flexible(
-                                    child: Text(
-                                      stop.place.name,
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        decoration: stop.isVisited || stop.isSkipped
-                                            ? TextDecoration.lineThrough
-                                            : null,
-                                        color: stop.isSkipped ? Colors.grey : null,
-                                      ),
-                                    ),
+                              Icon(
+                                Icons.directions_car,
+                                size: 13,
+                                color: AppTheme.muted(context),
+                              ),
+                              const SizedBox(width: 7),
+                              Expanded(
+                                child: Text(
+                                  '${stop.distanceFromPreviousKm.toStringAsFixed(1)} km · ~${stop.travelTimeFromPreviousMinutes} min transit',
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: AppTypography.caption.copyWith(
+                                    fontSize: 11,
+                                    color: AppTheme.muted(context),
                                   ),
-                                  if (stop.isSkipped) ...[
-                                    const SizedBox(width: 6),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
-                                      decoration: BoxDecoration(
-                                        color: Colors.grey.shade200,
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      child: const Text(
-                                        'Skipped',
-                                        style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Colors.grey),
-                                      ),
-                                    ),
-                                  ],
-                                ],
-                              ),
-                              Text(
-                                '${stop.startTime} – ${stop.endTime} · (${stop.estimatedDurationMinutes}m visit)',
-                                style: const TextStyle(fontSize: 11, color: Colors.grey),
-                              ),
-                              if (stop.optimizationHint != null)
-                                Text(
-                                  stop.optimizationHint!,
-                                  style: TextStyle(fontSize: 10, color: Colors.orange.shade900),
                                 ),
+                              ),
                             ],
                           ),
                         ),
-                        Text(
-                          stop.estimatedCost > 0 ? '₹${stop.estimatedCost.round()}' : 'Free',
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                            color: stop.estimatedCost > 0 ? AppTheme.primary : AppTheme.success,
+                      Row(
+                        children: [
+                          // Time gutter + status dot
+                          SizedBox(
+                            width: 44,
+                            child: Column(
+                              children: [
+                                Text(
+                                  stop.startTime,
+                                  textAlign: TextAlign.center,
+                                  style: AppTypography.chipLabel.copyWith(
+                                    fontSize: 10.5,
+                                    color: stop.isSkipped
+                                        ? AppTheme.muted(context)
+                                        : AppTheme.onDark,
+                                  ),
+                                ),
+                                const SizedBox(height: 5),
+                                Container(
+                                  width: 9,
+                                  height: 9,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: stop.isVisited
+                                        ? AppTheme.success
+                                        : stop.isSkipped
+                                            ? Colors.transparent
+                                            : AppTheme.primary,
+                                    border: stop.isSkipped
+                                        ? Border.all(
+                                            color: AppTheme.muted(context),
+                                            width: 1.5,
+                                          )
+                                        : null,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                        _buildStopMenu(context, service, trip, dIdx, sIdx, stop),
-                      ],
+                          const SizedBox(width: 11),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Wrap(
+                                  crossAxisAlignment: WrapCrossAlignment.center,
+                                  spacing: 7,
+                                  runSpacing: 5,
+                                  children: [
+                                    Text(
+                                      stop.place.name,
+                                      style: AppTypography.titleSmall.copyWith(
+                                        fontSize: 14,
+                                        color: struck
+                                            ? AppTheme.muted(context)
+                                            : AppTheme.onDark,
+                                        decoration: struck
+                                            ? TextDecoration.lineThrough
+                                            : null,
+                                      ),
+                                    ),
+                                    if (stop.isSkipped)
+                                      StatusPill(
+                                        label: 'Skipped',
+                                        color: AppTheme.mutedDark,
+                                      ),
+                                  ],
+                                ),
+                                const SizedBox(height: 3),
+                                Text(
+                                  '${stop.startTime} – ${stop.endTime} · ${stop.estimatedDurationMinutes}m visit',
+                                  style: AppTypography.caption.copyWith(
+                                    fontSize: 11,
+                                    color: AppTheme.muted(context),
+                                  ),
+                                ),
+                                if (stop.optimizationHint != null)
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 3),
+                                    child: Text(
+                                      stop.optimizationHint!,
+                                      style: AppTypography.caption.copyWith(
+                                        fontSize: 10.5,
+                                        color: AppTheme.warning,
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            stop.estimatedCost > 0
+                                ? '₹${stop.estimatedCost.round()}'
+                                : 'Free',
+                            style: AppTypography.chipLabel.copyWith(
+                              fontSize: 11.5,
+                              color: stop.estimatedCost > 0
+                                  ? AppTheme.onDark
+                                  : AppTheme.success,
+                            ),
+                          ),
+                          _buildStopMenu(context, service, trip, dIdx, sIdx, stop),
+                        ],
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+
+            GestureDetector(
+              onTap: () => _addStop(context, service, trip, dIdx),
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 11),
+                decoration: BoxDecoration(
+                  borderRadius: AppSpacing.pill,
+                  border: Border.all(
+                    color: const Color(0x2EFFFFFF),
+                    style: BorderStyle.solid,
+                  ),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.add, size: 15, color: AppTheme.muted(context)),
+                    const SizedBox(width: 7),
+                    Text(
+                      'Add stop',
+                      style: AppTypography.chipLabel.copyWith(
+                        fontSize: 12,
+                        color: AppTheme.muted(context),
+                      ),
                     ),
                   ],
                 ),
-              );
-            },
-          ),
-
-          Padding(
-            padding: const EdgeInsets.fromLTRB(AppSpacing.sm, 0, AppSpacing.sm, AppSpacing.sm),
-            child: TextButton.icon(
-              onPressed: () => _addStop(context, service, trip, dIdx),
-              icon: const Icon(Icons.add, size: 18),
-              label: const Text('Add stop'),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildConflictBanner(List<ItineraryConflict> conflicts) {
+  Widget _buildConflictBanner(
+    BuildContext context,
+    List<ItineraryConflict> conflicts,
+  ) {
     final shown = conflicts.take(2).toList();
     return Container(
-      margin: const EdgeInsets.fromLTRB(AppSpacing.sm, AppSpacing.sm, AppSpacing.sm, 0),
-      padding: const EdgeInsets.all(AppSpacing.sm),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppTheme.warning.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-        border: Border.all(color: AppTheme.warning.withValues(alpha: 0.35)),
+        color: AppTheme.tint(AppTheme.warning, 0.10),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppTheme.warning.withValues(alpha: 0.28)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Text(
+            '${conflicts.length} timing ${conflicts.length == 1 ? 'conflict' : 'conflicts'}',
+            style: AppTypography.chipLabel.copyWith(
+              fontSize: 11.5,
+              color: AppTheme.warning,
+            ),
+          ),
+          const SizedBox(height: 5),
           for (final conflict in shown)
             Padding(
-              padding: const EdgeInsets.only(bottom: 2),
+              padding: const EdgeInsets.only(top: 3),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Icon(Icons.warning_amber_rounded, size: 14, color: AppTheme.warning),
-                  const SizedBox(width: 6),
+                  const Icon(
+                    Icons.warning_amber_rounded,
+                    size: 13,
+                    color: AppTheme.warning,
+                  ),
+                  const SizedBox(width: 7),
                   Expanded(
                     child: Text(
                       conflict.message,
-                      style: const TextStyle(fontSize: 11, color: Colors.black87),
+                      style: AppTypography.caption.copyWith(
+                        fontSize: 11,
+                        color: AppTheme.body(context),
+                      ),
                     ),
                   ),
                 ],
@@ -405,7 +570,10 @@ class ItineraryScreen extends StatelessWidget {
         const PopupMenuItem(value: 'edit_time', child: Text('Edit time')),
         const PopupMenuItem(value: 'change_place', child: Text('Change place')),
         const PopupMenuItem(value: 'insert_after', child: Text('Insert stop after')),
-        PopupMenuItem(value: 'toggle_skip', child: Text(stop.isSkipped ? 'Unskip' : 'Skip')),
+        PopupMenuItem(
+          value: 'toggle_skip',
+          child: Text(stop.isSkipped ? 'Unskip' : 'Skip'),
+        ),
         const PopupMenuItem(value: 'delete', child: Text('Delete')),
       ],
     );
@@ -462,7 +630,8 @@ class ItineraryScreen extends StatelessWidget {
     if (place == null) return;
 
     final day = trip.days[dIdx];
-    final position = insertAfterIndex != null ? insertAfterIndex + 1 : day.stops.length;
+    final position =
+        insertAfterIndex != null ? insertAfterIndex + 1 : day.stops.length;
     service.insertStopAt(dIdx, position, place);
   }
 }

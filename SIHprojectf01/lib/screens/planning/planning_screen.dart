@@ -10,7 +10,9 @@ import '../../utils/app_theme.dart';
 import '../../widgets/buttons.dart';
 import '../../widgets/common_widgets.dart';
 
-/// PlanningScreen — Wanderlog & Roadtrippers inspired Budget & Route Planner (Steps 7 & 8)
+/// PlanningScreen — Budget & Route Planner, dark "accent panel" theme.
+/// Layout order unchanged: preferences panel, budget summary, day plans,
+/// start-journey action.
 class PlanningScreen extends StatefulWidget {
   final String destinationId;
   const PlanningScreen({super.key, this.destinationId = ''});
@@ -48,7 +50,9 @@ class _PlanningScreenState extends State<PlanningScreen> {
   void initState() {
     super.initState();
     _destinationController = TextEditingController(
-      text: widget.destinationId.isNotEmpty ? widget.destinationId : 'Coastal Trail & City',
+      text: widget.destinationId.isNotEmpty
+          ? widget.destinationId
+          : 'Coastal Trail & City',
     );
   }
 
@@ -115,8 +119,9 @@ class _PlanningScreenState extends State<PlanningScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            backgroundColor: AppTheme.success,
-            content: Text('✨ Generated ${plan.days.length}-Day Plan with ${plan.totalStopsCount} stops!'),
+            content: Text(
+              'Generated ${plan.days.length}-day plan with ${plan.totalStopsCount} stops',
+            ),
           ),
         );
       }
@@ -124,10 +129,7 @@ class _PlanningScreenState extends State<PlanningScreen> {
       setState(() => _isGenerating = false);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            backgroundColor: AppTheme.error,
-            content: Text('Error generating plan: $e'),
-          ),
+          SnackBar(content: Text('Error generating plan: $e')),
         );
       }
     }
@@ -138,14 +140,25 @@ class _PlanningScreenState extends State<PlanningScreen> {
     final activeTrip = _planningService.activeTrip;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Budget & Route Planner'),
+      appBar: TripSafeAppBar(
+        title: 'Plan & budget',
         actions: [
           if (activeTrip != null)
-            TextButton.icon(
-              icon: const Icon(Icons.map, color: Colors.white, size: 18),
-              label: const Text('Itinerary', style: TextStyle(color: Colors.white)),
-              onPressed: () => Navigator.pushNamed(context, AppRoutes.itinerary),
+            Padding(
+              padding: const EdgeInsets.only(right: AppSpacing.md),
+              child: Center(
+                child: GestureDetector(
+                  onTap: () =>
+                      Navigator.pushNamed(context, AppRoutes.itinerary),
+                  child: Text(
+                    'Itinerary',
+                    style: AppTypography.chipLabel.copyWith(
+                      color: AppTheme.secondary,
+                      fontSize: 12,
+                    ),
+                  ),
+                ),
+              ),
             ),
         ],
       ),
@@ -154,29 +167,31 @@ class _PlanningScreenState extends State<PlanningScreen> {
         builder: (context, _) {
           return SingleChildScrollView(
             physics: const BouncingScrollPhysics(),
-            padding: const EdgeInsets.all(AppSpacing.md),
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.md,
+              AppSpacing.sm,
+              AppSpacing.md,
+              AppSpacing.xxl,
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Preferences Configuration Box
-                _buildPreferencesCard(),
-
-                const SizedBox(height: AppSpacing.lg),
-
-                // Generated Trip Plan View
+                _buildPreferencesPanel(),
                 if (activeTrip != null) ...[
-                  _buildBudgetSummaryHeader(activeTrip),
-                  const SizedBox(height: AppSpacing.md),
+                  const SizedBox(height: 20),
+                  _buildBudgetSummary(activeTrip),
+                  const SizedBox(height: 20),
+                  const SectionLabel('Day plans'),
+                  const SizedBox(height: 11),
                   _buildDayPlansList(activeTrip),
-                  const SizedBox(height: AppSpacing.lg),
+                  const SizedBox(height: 8),
                   PrimaryButton(
-                    label: 'Start Active Journey',
+                    label: 'Start active journey',
                     icon: Icons.navigation_outlined,
-                    onPressed: () => Navigator.pushNamed(context, AppRoutes.journey),
+                    onPressed: () =>
+                        Navigator.pushNamed(context, AppRoutes.journey),
                   ),
                 ],
-
-                const SizedBox(height: AppSpacing.xxl),
               ],
             ),
           );
@@ -185,142 +200,156 @@ class _PlanningScreenState extends State<PlanningScreen> {
     );
   }
 
-  Widget _buildPreferencesCard() {
-    return AppCard(
-      padding: const EdgeInsets.all(AppSpacing.md),
+  // ── Preferences — the saffron accent panel ─────────────────────────────
+  Widget _buildPreferencesPanel() {
+    const ink = AppTheme.onSecondary;
+
+    return AccentPanel(
+      color: AppTheme.secondary,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              const Icon(Icons.tune, color: AppTheme.primary, size: 20),
-              const SizedBox(width: 8),
-              Text(
-                'Trip Parameters & Budget',
-                style: AppTypography.titleMedium.copyWith(fontWeight: FontWeight.bold),
-              ),
-            ],
-          ),
-          const SizedBox(height: AppSpacing.md),
-
-          // Destination
-          TextField(
-            controller: _destinationController,
-            decoration: const InputDecoration(
-              labelText: 'Destination / Area',
-              prefixIcon: Icon(Icons.place_outlined),
+          Text(
+            'TRIP PREFERENCES',
+            style: AppTypography.sectionLabel.copyWith(
+              fontSize: 10.5,
+              letterSpacing: 1.8,
+              color: ink.withValues(alpha: 0.65),
             ),
           ),
-          const SizedBox(height: AppSpacing.md),
+          const SizedBox(height: 18),
 
-          // Duration & Group Size
-          Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Duration: $_durationDays Days', style: AppTypography.bodySmall),
-                    Slider(
-                      value: _durationDays.toDouble(),
-                      min: 1,
-                      max: 5,
-                      divisions: 4,
-                      label: '$_durationDays Days',
-                      onChanged: (val) => setState(() => _durationDays = val.round()),
-                    ),
-                  ],
-                ),
+          _panelLabel('Destination / area'),
+          const SizedBox(height: 7),
+          TextField(
+            controller: _destinationController,
+            style: AppTypography.titleSmall.copyWith(color: ink),
+            cursorColor: ink,
+            decoration: InputDecoration(
+              filled: true,
+              fillColor: const Color(0xFFFFFDF6),
+              hintText: 'Where to?',
+              hintStyle: AppTypography.bodyMedium.copyWith(
+                color: ink.withValues(alpha: 0.45),
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Group: $_groupSize Friends', style: AppTypography.bodySmall),
-                    Slider(
-                      value: _groupSize.toDouble(),
-                      min: 1,
-                      max: 8,
-                      divisions: 7,
-                      label: '$_groupSize People',
-                      onChanged: (val) => setState(() => _groupSize = val.round()),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              border: _panelFieldBorder,
+              enabledBorder: _panelFieldBorder,
+              focusedBorder: _panelFieldBorder,
+            ),
+          ),
+          const SizedBox(height: 18),
+
+          _panelSlider(
+            label: 'Duration',
+            value: '$_durationDays days',
+            slider: Slider(
+              value: _durationDays.toDouble(),
+              min: 1,
+              max: 5,
+              divisions: 4,
+              label: '$_durationDays Days',
+              onChanged: (val) => setState(() => _durationDays = val.round()),
+            ),
+          ),
+          _panelSlider(
+            label: 'Group size',
+            value: '$_groupSize people',
+            slider: Slider(
+              value: _groupSize.toDouble(),
+              min: 1,
+              max: 8,
+              divisions: 7,
+              label: '$_groupSize People',
+              onChanged: (val) => setState(() => _groupSize = val.round()),
+            ),
+          ),
+          _panelSlider(
+            label: 'Budget per person',
+            value: '₹${_budgetPerPerson.round()}',
+            hint: 'Total ₹${(_budgetPerPerson * _groupSize).round()}',
+            slider: Slider(
+              value: _budgetPerPerson,
+              min: 500,
+              max: 10000,
+              divisions: 19,
+              label: '₹${_budgetPerPerson.round()}',
+              onChanged: (val) => setState(() => _budgetPerPerson = val),
+            ),
           ),
 
-          // Budget Per Person
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text('Budget per person: ₹${_budgetPerPerson.round()}', style: AppTypography.bodySmall),
-                  Text(
-                    'Total: ₹${(_budgetPerPerson * _groupSize).round()}',
-                    style: AppTypography.bodySmall.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: AppTheme.secondary,
-                    ),
-                  ),
-                ],
-              ),
-              Slider(
-                value: _budgetPerPerson,
-                min: 500,
-                max: 10000,
-                divisions: 19,
-                label: '₹${_budgetPerPerson.round()}',
-                onChanged: (val) => setState(() => _budgetPerPerson = val),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 6),
-
-          // Interests Vibes Chips
-          Text('Vibes & Interests', style: AppTypography.bodySmall),
-          const SizedBox(height: 6),
+          const SizedBox(height: 8),
+          _panelLabel('Vibes & interests'),
+          const SizedBox(height: 9),
           Wrap(
-            spacing: 6,
-            runSpacing: 6,
+            spacing: 7,
+            runSpacing: 7,
             children: _availableInterests.map((interest) {
               final isSelected = _selectedInterests.contains(interest);
-              return FilterChip(
-                label: Text(interest),
-                selected: isSelected,
-                selectedColor: AppTheme.primary.withValues(alpha: 0.2),
-                labelStyle: TextStyle(
-                  fontSize: 12,
-                  color: isSelected ? AppTheme.primary : Colors.grey.shade800,
-                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                ),
-                onSelected: (selected) {
+              return GestureDetector(
+                onTap: () {
                   setState(() {
-                    if (selected) {
+                    if (!isSelected) {
                       _selectedInterests.add(interest);
                     } else if (_selectedInterests.length > 1) {
                       _selectedInterests.remove(interest);
                     }
                   });
                 },
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 13, vertical: 7),
+                  decoration: BoxDecoration(
+                    color: isSelected ? ink : Colors.transparent,
+                    borderRadius: AppSpacing.pill,
+                    border: Border.all(
+                      color: isSelected
+                          ? Colors.transparent
+                          : ink.withValues(alpha: 0.3),
+                      width: 1.5,
+                    ),
+                  ),
+                  child: Text(
+                    interest,
+                    style: AppTypography.chipLabel.copyWith(
+                      color: isSelected ? AppTheme.secondary : ink,
+                    ),
+                  ),
+                ),
               );
             }).toList(),
           ),
 
-          const SizedBox(height: AppSpacing.md),
-
-          // Generate Button
+          const SizedBox(height: 18),
           SizedBox(
             width: double.infinity,
-            child: PrimaryButton(
-              label: _isGenerating ? 'Generating Itinerary...' : 'Generate Plan & Route',
-              icon: Icons.auto_awesome,
+            child: ElevatedButton(
               onPressed: _isGenerating ? null : _generateSmartPlan,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: ink,
+                foregroundColor: AppTheme.secondary,
+                disabledBackgroundColor: ink.withValues(alpha: 0.4),
+                disabledForegroundColor:
+                    AppTheme.secondary.withValues(alpha: 0.6),
+              ),
+              child: _isGenerating
+                  ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.2,
+                        color: AppTheme.secondary,
+                      ),
+                    )
+                  : Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.auto_awesome, size: 17),
+                        const SizedBox(width: AppSpacing.sm),
+                        Text('Generate plan'),
+                      ],
+                    ),
             ),
           ),
         ],
@@ -328,77 +357,137 @@ class _PlanningScreenState extends State<PlanningScreen> {
     );
   }
 
-  Widget _buildBudgetSummaryHeader(TripPlan trip) {
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.md),
-      decoration: BoxDecoration(
-        color: AppTheme.primary.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-        border: Border.all(color: AppTheme.primary.withValues(alpha: 0.2)),
-      ),
+  static final OutlineInputBorder _panelFieldBorder = OutlineInputBorder(
+    borderRadius: BorderRadius.circular(14),
+    borderSide: BorderSide.none,
+  );
+
+  Widget _panelLabel(String text) => Text(
+        text.toUpperCase(),
+        style: AppTypography.sectionLabel.copyWith(
+          fontSize: 10.5,
+          letterSpacing: 1.2,
+          color: AppTheme.onSecondary.withValues(alpha: 0.65),
+        ),
+      );
+
+  Widget _panelSlider({
+    required String label,
+    required String value,
+    required Widget slider,
+    String? hint,
+  }) {
+    const ink = AppTheme.onSecondary;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text(
-                'Trip Budget Tracker',
-                style: AppTypography.titleSmall.copyWith(fontWeight: FontWeight.bold),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                decoration: BoxDecoration(
-                  color: trip.remainingBudget >= 0
-                      ? AppTheme.success.withValues(alpha: 0.15)
-                      : AppTheme.error.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(10),
-                ),
+              Expanded(
                 child: Text(
-                  trip.remainingBudget >= 0 ? 'Within Budget' : 'Exceeds Budget',
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.bold,
-                    color: trip.remainingBudget >= 0 ? AppTheme.success : AppTheme.error,
-                  ),
+                  label,
+                  style: AppTypography.chipLabel
+                      .copyWith(color: ink, fontSize: 12.5),
                 ),
+              ),
+              if (hint != null) ...[
+                Text(
+                  hint,
+                  style: AppTypography.caption
+                      .copyWith(color: ink.withValues(alpha: 0.7)),
+                ),
+                const SizedBox(width: 10),
+              ],
+              Text(
+                value,
+                style: AppTypography.titleMedium.copyWith(color: ink),
               ),
             ],
           ),
-          const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _buildBudgetStat('Total Budget', '₹${trip.totalBudget.round()}'),
-              _buildBudgetStat('Planned Cost', '₹${trip.totalSpentOrPlanned.round()}'),
-              _buildBudgetStat(
-                'Remaining',
-                '₹${trip.remainingBudget.round()}',
-                color: trip.remainingBudget >= 0 ? AppTheme.success : AppTheme.error,
-              ),
-            ],
+          SliderTheme(
+            data: SliderThemeData(
+              activeTrackColor: ink,
+              inactiveTrackColor: ink.withValues(alpha: 0.2),
+              thumbColor: ink,
+              overlayColor: ink.withValues(alpha: 0.12),
+              valueIndicatorColor: ink,
+              valueIndicatorTextStyle:
+                  AppTypography.chipLabel.copyWith(color: AppTheme.secondary),
+              trackHeight: 6,
+            ),
+            child: slider,
           ),
         ],
       ),
     );
   }
 
-  Widget _buildBudgetStat(String label, String value, {Color? color}) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(label, style: AppTypography.caption.copyWith(color: Colors.grey.shade600)),
-        Text(
-          value,
-          style: AppTypography.bodyMedium.copyWith(
-            fontWeight: FontWeight.bold,
-            color: color ?? Theme.of(context).colorScheme.onSurface,
+  // ── Budget summary ─────────────────────────────────────────────────────
+  Widget _buildBudgetSummary(TripPlan trip) {
+    final within = trip.remainingBudget >= 0;
+
+    return AppCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Text(
+                  trip.title.toUpperCase(),
+                  style: AppTypography.titleLarge.copyWith(height: 1.1),
+                ),
+              ),
+              const SizedBox(width: 10),
+              StatusPill(
+                label: within ? 'Within budget' : 'Over budget',
+                color: within ? AppTheme.success : AppTheme.danger,
+              ),
+            ],
           ),
-        ),
-      ],
+          const SizedBox(height: 14),
+          Row(
+            children: [
+              Expanded(
+                child: StatBlock(
+                  label: 'Total budget',
+                  value: '₹${trip.totalBudget.round()}',
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: StatBlock(
+                  label: 'Planned',
+                  value: '₹${trip.totalSpentOrPlanned.round()}',
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: StatBlock(
+                  label: 'Remaining',
+                  value: '₹${trip.remainingBudget.round()}',
+                  color: within ? AppTheme.success : AppTheme.danger,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          AppProgressBar(
+            value: trip.totalBudget > 0
+                ? trip.totalSpentOrPlanned / trip.totalBudget
+                : 0,
+            color: within ? AppTheme.secondary : AppTheme.danger,
+          ),
+        ],
+      ),
     );
   }
 
+  // ── Day plans ──────────────────────────────────────────────────────────
   Widget _buildDayPlansList(TripPlan trip) {
     return ListView.builder(
       shrinkWrap: true,
@@ -407,130 +496,175 @@ class _PlanningScreenState extends State<PlanningScreen> {
       itemBuilder: (context, dIdx) {
         final day = trip.days[dIdx];
 
-        return Container(
-          margin: const EdgeInsets.only(bottom: AppSpacing.md),
-          decoration: BoxDecoration(
-            border: Border.all(color: Colors.grey.shade300),
-            borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Day Header
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade100,
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(AppSpacing.radiusMd)),
-                ),
-                child: Row(
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: AppCard(
+            padding: const EdgeInsets.all(15),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
                   children: [
-                    Text(
-                      day.title,
-                      style: AppTypography.bodyMedium.copyWith(fontWeight: FontWeight.bold),
+                    Container(
+                      width: 30,
+                      height: 30,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: AppTheme.primary,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Text(
+                        '${dIdx + 1}',
+                        style: AppTypography.chipLabel.copyWith(
+                          color: AppTheme.onPrimary,
+                          fontSize: 13,
+                        ),
+                      ),
                     ),
-                    const Spacer(),
-                    IconButton(
-                      icon: const Icon(Icons.route, size: 20, color: AppTheme.secondary),
-                      tooltip: 'Auto-optimize stop order',
+                    const SizedBox(width: 11),
+                    Expanded(
+                      child: Text(
+                        day.title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppTypography.titleSmall,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    PillButton(
+                      label: 'Optimize',
+                      icon: Icons.route,
+                      dense: true,
+                      color: AppTheme.secondary,
                       onPressed: () => _planningService.optimizeDayRoute(dIdx),
                     ),
                   ],
                 ),
-              ),
+                const SizedBox(height: 12),
+                ReorderableListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  buildDefaultDragHandles: true,
+                  itemCount: day.stops.length,
+                  onReorder: (oldIdx, newIdx) =>
+                      _planningService.reorderStops(dIdx, oldIdx, newIdx),
+                  itemBuilder: (context, sIdx) {
+                    final stop = day.stops[sIdx];
+                    final isFirst = sIdx == 0;
 
-              // Stops Sequence
-              ReorderableListView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: day.stops.length,
-                onReorder: (oldIdx, newIdx) => _planningService.reorderStops(dIdx, oldIdx, newIdx),
-                itemBuilder: (context, sIdx) {
-                  final stop = day.stops[sIdx];
-                  final isFirst = sIdx == 0;
-
-                  return Container(
-                    key: ValueKey(stop.id),
-                    padding: const EdgeInsets.all(AppSpacing.sm),
-                    decoration: BoxDecoration(
-                      border: Border(bottom: BorderSide(color: Colors.grey.shade200)),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Transit Indicator from previous stop
-                        if (!isFirst)
-                          Padding(
-                            padding: const EdgeInsets.only(left: 12, bottom: 6),
-                            child: Row(
-                              children: [
-                                const Icon(Icons.arrow_downward, size: 14, color: Colors.grey),
-                                const SizedBox(width: 6),
-                                Text(
-                                  '🚗 ${stop.distanceFromPreviousKm.toStringAsFixed(1)} km · ~${stop.travelTimeFromPreviousMinutes} min transit',
-                                  style: AppTypography.caption.copyWith(
-                                    color: Colors.grey.shade600,
-                                    fontSize: 11,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-
-                        // Stop Card
-                        Row(
-                          children: [
-                            CircleAvatar(
-                              radius: 16,
-                              backgroundColor: AppTheme.primary.withValues(alpha: 0.12),
-                              child: Text(
-                                '${sIdx + 1}',
-                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
-                              ),
-                            ),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                    return Padding(
+                      key: ValueKey(stop.id),
+                      padding: const EdgeInsets.only(bottom: 10),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (!isFirst)
+                            Padding(
+                              padding:
+                                  const EdgeInsets.only(left: 6, bottom: 8),
+                              child: Row(
                                 children: [
-                                  Text(
-                                    stop.place.name,
-                                    style: AppTypography.bodySmall.copyWith(fontWeight: FontWeight.bold),
+                                  Icon(
+                                    Icons.arrow_downward,
+                                    size: 13,
+                                    color: AppTheme.muted(context),
                                   ),
-                                  Text(
-                                    '${stop.startTime} – ${stop.endTime} · (${stop.estimatedDurationMinutes}m stay)',
-                                    style: AppTypography.caption.copyWith(color: Colors.grey.shade700),
-                                  ),
-                                  if (stop.optimizationHint != null)
-                                    Text(
-                                      stop.optimizationHint!,
+                                  const SizedBox(width: 7),
+                                  Expanded(
+                                    child: Text(
+                                      '${stop.distanceFromPreviousKm.toStringAsFixed(1)} km · ~${stop.travelTimeFromPreviousMinutes} min transit',
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
                                       style: AppTypography.caption.copyWith(
-                                        color: Colors.orange.shade800,
                                         fontSize: 11,
+                                        color: AppTheme.muted(context),
                                       ),
                                     ),
+                                  ),
                                 ],
                               ),
                             ),
-                            Text(
-                              stop.estimatedCost > 0 ? '₹${stop.estimatedCost.round()}' : 'Free',
-                              style: AppTypography.caption.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: stop.estimatedCost > 0 ? AppTheme.primary : AppTheme.success,
+                          Row(
+                            children: [
+                              Container(
+                                width: 28,
+                                height: 28,
+                                alignment: Alignment.center,
+                                decoration: BoxDecoration(
+                                  color: AppTheme.tint(AppTheme.primary, 0.14),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Text(
+                                  '${sIdx + 1}',
+                                  style: AppTypography.chipLabel.copyWith(
+                                    color: AppTheme.primary,
+                                    fontSize: 11.5,
+                                  ),
+                                ),
                               ),
-                            ),
-                            IconButton(
-                              icon: const Icon(Icons.close, size: 18, color: Colors.grey),
-                              onPressed: () => _planningService.removeStop(dIdx, stop.id),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  );
-                },
-              ),
-            ],
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      stop.place.name,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: AppTypography.titleSmall
+                                          .copyWith(fontSize: 13.5),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      '${stop.startTime} – ${stop.endTime} · ${stop.estimatedDurationMinutes}m',
+                                      style: AppTypography.caption.copyWith(
+                                        color: AppTheme.muted(context),
+                                      ),
+                                    ),
+                                    if (stop.optimizationHint != null)
+                                      Padding(
+                                        padding:
+                                            const EdgeInsets.only(top: 2),
+                                        child: Text(
+                                          stop.optimizationHint!,
+                                          style:
+                                              AppTypography.caption.copyWith(
+                                            fontSize: 11,
+                                            color: AppTheme.warning,
+                                          ),
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                stop.estimatedCost > 0
+                                    ? '₹${stop.estimatedCost.round()}'
+                                    : 'Free',
+                                style: AppTypography.chipLabel.copyWith(
+                                  fontSize: 11.5,
+                                  color: stop.estimatedCost > 0
+                                      ? AppTheme.onDark
+                                      : AppTheme.success,
+                                ),
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.close, size: 17),
+                                color: AppTheme.muted(context),
+                                visualDensity: VisualDensity.compact,
+                                onPressed: () =>
+                                    _planningService.removeStop(dIdx, stop.id),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
           ),
         );
       },

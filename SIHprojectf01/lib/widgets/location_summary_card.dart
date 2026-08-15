@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 
 import '../services/location_service.dart';
+import '../utils/app_theme.dart';
+import 'buttons.dart';
+import 'common_widgets.dart';
 
-/// Shows the user's current GPS location on the Home screen.
-/// Fetches location on first build and displays a short summary,
-/// a loading state, or an error state.
+/// Shows the user's current GPS location. Fetches on first build and
+/// displays a short summary, a loading state, or an error state.
 class LocationSummaryCard extends StatefulWidget {
   const LocationSummaryCard({super.key});
 
@@ -47,28 +49,34 @@ class _LocationSummaryCardState extends State<LocationSummaryCard> {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: _isLoading
-            ? _buildLoading()
-            : _errorMessage != null
-                ? _buildError()
-                : _buildSuccess(),
-      ),
+    return AppCard(
+      padding: const EdgeInsets.all(14),
+      child: _isLoading
+          ? _buildLoading()
+          : _errorMessage != null
+              ? _buildError()
+              : _buildSuccess(),
     );
   }
 
   Widget _buildLoading() {
-    return const Row(
+    return Row(
       children: [
-        SizedBox(
-          width: 20,
-          height: 20,
-          child: CircularProgressIndicator(strokeWidth: 2.5),
+        const SizedBox(
+          width: 18,
+          height: 18,
+          child: CircularProgressIndicator(
+            strokeWidth: 2.2,
+            color: AppTheme.primary,
+          ),
         ),
-        SizedBox(width: 12),
-        Text('Locating you...'),
+        const SizedBox(width: 12),
+        Text(
+          'Locating you…',
+          style: AppTypography.bodyMedium.copyWith(
+            color: AppTheme.muted(context),
+          ),
+        ),
       ],
     );
   }
@@ -76,17 +84,26 @@ class _LocationSummaryCardState extends State<LocationSummaryCard> {
   Widget _buildError() {
     return Row(
       children: [
-        const Icon(Icons.location_off, color: Colors.redAccent),
+        const IconChip(
+          icon: Icons.location_off,
+          color: AppTheme.danger,
+          size: 38,
+        ),
         const SizedBox(width: 12),
         Expanded(
           child: Text(
             _errorMessage ?? 'Unable to fetch location.',
-            style: const TextStyle(fontSize: 13),
+            style: AppTypography.bodySmall.copyWith(
+              fontSize: 12.5,
+              color: AppTheme.body(context),
+            ),
           ),
         ),
-        TextButton(
+        const SizedBox(width: 8),
+        PillButton(
+          label: 'Retry',
+          dense: true,
           onPressed: _fetchLocation,
-          child: const Text('Retry'),
         ),
       ],
     );
@@ -97,7 +114,7 @@ class _LocationSummaryCardState extends State<LocationSummaryCard> {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Icon(Icons.my_location, color: Colors.blueAccent),
+        const IconChip(icon: Icons.my_location, size: 38),
         const SizedBox(width: 12),
         Expanded(
           child: Column(
@@ -105,25 +122,29 @@ class _LocationSummaryCardState extends State<LocationSummaryCard> {
             children: [
               Text(
                 address.areaLabel,
-                style: const TextStyle(
-                  fontWeight: FontWeight.w700,
-                  fontSize: 16,
-                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: AppTypography.titleMedium,
               ),
-              const SizedBox(height: 2),
+              const SizedBox(height: 3),
               Text(
                 address.shortLine,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(fontSize: 13, color: Colors.grey),
+                style: AppTypography.caption.copyWith(
+                  fontSize: 11.5,
+                  color: AppTheme.muted(context),
+                ),
               ),
             ],
           ),
         ),
-        IconButton(
-          onPressed: _fetchLocation,
-          icon: const Icon(Icons.refresh),
+        const SizedBox(width: 8),
+        CircleIconButton(
+          icon: Icons.refresh,
+          size: 32,
           tooltip: 'Refresh location',
+          onPressed: _fetchLocation,
         ),
       ],
     );

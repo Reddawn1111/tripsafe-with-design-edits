@@ -12,7 +12,8 @@ class TripSafeApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light(),
       darkTheme: AppTheme.dark(),
-      themeMode: ThemeMode.system,
+      // Dark is the design of record; light is kept working as a fallback.
+      themeMode: ThemeMode.dark,
       initialRoute: AppRoutes.home,
       onGenerateRoute: AppRouter.onGenerateRoute,
       onUnknownRoute: AppRouter.onUnknownRoute,

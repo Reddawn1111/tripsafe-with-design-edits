@@ -7,7 +7,9 @@ import '../../utils/app_theme.dart';
 import '../../widgets/buttons.dart';
 import '../../widgets/common_widgets.dart';
 
-/// SafetyCheckScreen — Pre-trip safety radar, environmental evaluations & safe alternatives (Step 17)
+/// SafetyCheckScreen — pre-trip safety radar, dark "accent panel" theme.
+/// Layout order unchanged: score panel, advisories, live conditions,
+/// essential checklist, proceed action.
 class SafetyCheckScreen extends StatelessWidget {
   final String tripId;
   const SafetyCheckScreen({super.key, this.tripId = ''});
@@ -19,46 +21,56 @@ class SafetyCheckScreen extends StatelessWidget {
     final eval = SafetyService.instance.evaluateSafety(destination);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Safety Radar & Advisories'),
-      ),
+      appBar: const TripSafeAppBar(title: 'Safety Radar'),
       body: SingleChildScrollView(
         physics: const BouncingScrollPhysics(),
-        padding: const EdgeInsets.all(AppSpacing.md),
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.md,
+          AppSpacing.sm,
+          AppSpacing.md,
+          AppSpacing.xxl,
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Overall Safety Score & Status Card
-            _buildSafetyScoreCard(eval),
+            _buildScorePanel(context, eval),
 
-            const SizedBox(height: AppSpacing.md),
-
-            // Active Advisories Section
             if (eval.activeAlerts.isNotEmpty) ...[
-              Text(
-                'Active Environmental & Route Advisories',
-                style: AppTypography.titleSmall.copyWith(fontWeight: FontWeight.bold),
+              const SizedBox(height: 22),
+              SectionLabel('Active advisories · ${eval.activeAlerts.length}'),
+              const SizedBox(height: 11),
+              ...eval.activeAlerts.map(
+                (alert) => Padding(
+                  padding: const EdgeInsets.only(bottom: 11),
+                  child: _buildAlertCard(context, alert),
+                ),
               ),
-              const SizedBox(height: 8),
-              ...eval.activeAlerts.map((alert) => _buildAlertCard(context, alert)),
-              const SizedBox(height: AppSpacing.md),
             ],
 
-            // Weather & Local Conditions Card
+            const SizedBox(height: 8),
             AppCard(
-              padding: const EdgeInsets.all(AppSpacing.md),
               child: Row(
                 children: [
-                  const Icon(Icons.wb_sunny_outlined, color: Colors.orange, size: 28),
-                  const SizedBox(width: AppSpacing.md),
+                  const IconChip(
+                    icon: Icons.wb_sunny_outlined,
+                    color: AppTheme.secondary,
+                  ),
+                  const SizedBox(width: 13),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text('Live Conditions Overlay', style: TextStyle(fontWeight: FontWeight.bold)),
+                        Text(
+                          'Live conditions overlay',
+                          style: AppTypography.titleSmall,
+                        ),
+                        const SizedBox(height: 3),
                         Text(
                           '${eval.weatherSummary} · ${eval.crowdIndexLabel}',
-                          style: const TextStyle(fontSize: 12, color: Colors.grey),
+                          style: AppTypography.caption.copyWith(
+                            fontSize: 11.5,
+                            color: AppTheme.muted(context),
+                          ),
                         ),
                       ],
                     ),
@@ -67,26 +79,28 @@ class SafetyCheckScreen extends StatelessWidget {
               ),
             ),
 
-            const SizedBox(height: AppSpacing.md),
-
-            // Essential Safety Checklist
-            Text(
-              'TripSafe Essential Checklist',
-              style: AppTypography.titleSmall.copyWith(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 22),
+            const SectionLabel('Essential checklist'),
+            const SizedBox(height: 10),
             ...eval.safetyGuidelines.map(
               (guideline) => Padding(
-                padding: const EdgeInsets.only(bottom: 6),
+                padding: const EdgeInsets.only(bottom: 10),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Icon(Icons.check_circle, size: 16, color: AppTheme.success),
-                    const SizedBox(width: 8),
+                    const Icon(
+                      Icons.check_circle,
+                      size: 16,
+                      color: AppTheme.success,
+                    ),
+                    const SizedBox(width: 9),
                     Expanded(
                       child: Text(
                         guideline,
-                        style: TextStyle(fontSize: 12, color: Colors.grey.shade900),
+                        style: AppTypography.bodySmall.copyWith(
+                          fontSize: 12.5,
+                          color: AppTheme.body(context),
+                        ),
                       ),
                     ),
                   ],
@@ -94,133 +108,197 @@ class SafetyCheckScreen extends StatelessWidget {
               ),
             ),
 
-            const SizedBox(height: AppSpacing.lg),
-
-            // Action button
+            const SizedBox(height: 22),
             PrimaryButton(
-              label: 'Proceed to Itinerary',
+              label: 'Proceed to itinerary',
               icon: Icons.arrow_forward,
               onPressed: () => Navigator.pushNamed(context, AppRoutes.itinerary),
             ),
-            const SizedBox(height: AppSpacing.xxl),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildSafetyScoreCard(SafetyEvaluation eval) {
+  // ── Score panel — the one saturated panel on this screen ───────────────
+  Widget _buildScorePanel(BuildContext context, SafetyEvaluation eval) {
     final isSafe = eval.safetyScore >= 80;
+    final accent = isSafe ? AppTheme.success : AppTheme.warning;
+    final ink = AccentPanel.inkFor(accent);
 
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.md),
-      decoration: BoxDecoration(
-        color: isSafe ? AppTheme.success.withValues(alpha: 0.1) : AppTheme.warning.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-        border: Border.all(
-          color: isSafe ? AppTheme.success.withValues(alpha: 0.3) : AppTheme.warning.withValues(alpha: 0.4),
-        ),
-      ),
-      child: Row(
+    return AccentPanel(
+      color: accent,
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          CircleAvatar(
-            radius: 28,
-            backgroundColor: isSafe ? AppTheme.success : AppTheme.warning,
-            child: Text(
-              '${eval.safetyScore.round()}',
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontSize: 18,
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'OVERALL STATUS',
+                      style: AppTypography.sectionLabel.copyWith(
+                        fontSize: 10.5,
+                        letterSpacing: 1.6,
+                        color: ink.withValues(alpha: 0.65),
+                      ),
+                    ),
+                    const SizedBox(height: 5),
+                    Text(
+                      eval.overallSafetyStatus.toUpperCase(),
+                      style: AppTypography.displayMedium.copyWith(
+                        color: ink,
+                        fontSize: 25,
+                        height: 1.05,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ),
-          const SizedBox(width: AppSpacing.md),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  eval.overallSafetyStatus,
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                    color: isSafe ? Colors.green.shade900 : Colors.amber.shade900,
+              const SizedBox(width: 14),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    '${eval.safetyScore.round()}',
+                    style: AppTypography.displayLarge.copyWith(
+                      color: ink,
+                      fontSize: 54,
+                      letterSpacing: -2.6,
+                      height: 0.85,
+                    ),
                   ),
+                  const SizedBox(height: 2),
+                  Text(
+                    '/ 100 SCORE',
+                    style: AppTypography.chipLabel.copyWith(
+                      fontSize: 10.5,
+                      letterSpacing: 1,
+                      color: ink.withValues(alpha: 0.65),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Wrap(
+            spacing: 7,
+            runSpacing: 7,
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: ink,
+                  borderRadius: AppSpacing.pill,
                 ),
-                Text(
-                  'Destination: ${eval.destination}',
-                  style: const TextStyle(fontSize: 12, color: Colors.grey),
+                child: Text(
+                  eval.destination,
+                  style: AppTypography.chipLabel.copyWith(color: accent),
                 ),
-              ],
-            ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  border: Border.all(color: ink.withValues(alpha: 0.3), width: 1.5),
+                  borderRadius: AppSpacing.pill,
+                ),
+                child: Text(
+                  'Updated just now',
+                  style: AppTypography.chipLabel.copyWith(color: ink),
+                ),
+              ),
+            ],
           ),
         ],
       ),
     );
   }
 
+  // ── Advisory card ──────────────────────────────────────────────────────
   Widget _buildAlertCard(BuildContext context, SafetyRiskAlert alert) {
+    final accent = alert.severity.level >= 3 ? AppTheme.danger : AppTheme.warning;
+
     return AppCard(
-      padding: const EdgeInsets.all(AppSpacing.md),
+      accentBorder: accent,
+      padding: const EdgeInsets.all(15),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Icon(Icons.warning_amber_rounded, color: AppTheme.warning, size: 20),
-              const SizedBox(width: 8),
+              Icon(Icons.warning_amber_rounded, color: accent, size: 19),
+              const SizedBox(width: 10),
               Expanded(
-                child: Text(
-                  alert.title,
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
+                child: Text(alert.title, style: AppTypography.titleSmall),
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                decoration: BoxDecoration(
-                  color: AppTheme.warning.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: Text(
-                  alert.severity.label,
-                  style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppTheme.warning),
-                ),
-              ),
+              const SizedBox(width: 8),
+              StatusPill(label: alert.severity.label, color: accent),
             ],
           ),
-          const SizedBox(height: 6),
-          Text(alert.description, style: const TextStyle(fontSize: 12)),
-          const SizedBox(height: 8),
+          const SizedBox(height: 10),
           Text(
-            'Recommended Action: ${alert.recommendedAction}',
-            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppTheme.primary),
+            alert.description,
+            style: AppTypography.bodySmall.copyWith(
+              fontSize: 12,
+              color: AppTheme.body(context),
+            ),
+          ),
+          const SizedBox(height: 12),
+          const Divider(height: 1, color: AppTheme.borderDark),
+          const SizedBox(height: 12),
+          Text(
+            'RECOMMENDED ACTION',
+            style: AppTypography.sectionLabel.copyWith(
+              fontSize: 10,
+              letterSpacing: 1.4,
+              color: AppTheme.primary,
+            ),
+          ),
+          const SizedBox(height: 5),
+          Text(
+            alert.recommendedAction,
+            style: AppTypography.bodySmall.copyWith(fontSize: 12),
           ),
           if (alert.alternativeSuggestions.isNotEmpty) ...[
-            const SizedBox(height: 8),
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: Colors.grey.shade100,
-                borderRadius: BorderRadius.circular(6),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text('Safe Alternatives:', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
-                  ...alert.alternativeSuggestions.map(
-                    (alt) => Text('• $alt', style: TextStyle(fontSize: 11, color: Colors.grey.shade900)),
-                  ),
-                ],
-              ),
+            const SizedBox(height: 12),
+            // Tinted chips, not a light panel — keeps contrast on charcoal.
+            Wrap(
+              spacing: 7,
+              runSpacing: 7,
+              children: alert.alternativeSuggestions
+                  .map(
+                    (alt) => Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 11,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0x0FFFFFFF),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Text(
+                        'Alt: $alt',
+                        style: AppTypography.chipLabel.copyWith(fontSize: 11),
+                      ),
+                    ),
+                  )
+                  .toList(),
             ),
           ],
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
           Align(
             alignment: Alignment.centerRight,
-            child: TextButton.icon(
-              icon: const Icon(Icons.alt_route, size: 16),
-              label: const Text('Adapt Trip Plan'),
+            child: PillButton(
+              label: 'Adapt trip plan',
+              icon: Icons.alt_route,
+              color: AppTheme.primary,
+              dense: true,
               onPressed: () => Navigator.pushNamed(context, AppRoutes.adapt),
             ),
           ),

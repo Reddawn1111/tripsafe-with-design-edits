@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../utils/app_theme.dart';
 import 'explore_screen.dart';
 
 /// DiscoveryScreen — entry point for travel discovery & Explore Around Me.

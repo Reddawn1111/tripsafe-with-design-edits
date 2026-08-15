@@ -77,7 +77,7 @@ class AdaptTripScreen extends StatelessWidget {
               padding: const EdgeInsets.all(AppSpacing.md),
               decoration: BoxDecoration(
                 color: AppTheme.secondary.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
                 border: Border.all(color: AppTheme.secondary.withValues(alpha: 0.3)),
               ),
               child: Row(
@@ -91,7 +91,7 @@ class AdaptTripScreen extends StatelessWidget {
                         Text('Smart Route Adaptation', style: TextStyle(fontWeight: FontWeight.bold)),
                         Text(
                           'Select safe alternative stops below to replace high-risk coastal stops and automatically re-sequence your route.',
-                          style: TextStyle(fontSize: 12, color: Colors.grey),
+                          style: TextStyle(fontSize: 12, color: AppTheme.mutedDark),
                         ),
                       ],
                     ),
@@ -125,7 +125,7 @@ class AdaptTripScreen extends StatelessWidget {
                                 Text(alt.name, style: const TextStyle(fontWeight: FontWeight.bold)),
                                 Text(
                                   '${alt.category.displayName} · ⭐ ${alt.rating}',
-                                  style: const TextStyle(fontSize: 12, color: Colors.grey),
+                                  style: const TextStyle(fontSize: 12, color: AppTheme.mutedDark),
                                 ),
                                 Text(
                                   'Safe inland conditions · ~₹${alt.estimatedCost.round()}',

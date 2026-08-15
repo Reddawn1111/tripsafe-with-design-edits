@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import '../../utils/app_theme.dart';
 import '../../widgets/common_widgets.dart';
 
-/// MemoriesScreen — Captured trip moments, photos, and notes (Step 9)
+/// MemoriesScreen — trip memory board, dark "accent panel" theme.
+/// Layout unchanged: a scrolling list of photo cards with title, time,
+/// location and note.
 class MemoriesScreen extends StatelessWidget {
   final String tripId;
   const MemoriesScreen({super.key, this.tripId = ''});
@@ -27,61 +29,125 @@ class MemoriesScreen extends StatelessWidget {
     ];
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Trip Memories & Photos'),
+      appBar: TripSafeAppBar(
+        title: 'Memories',
+        subtitle: '${memories.length} moments logged',
         actions: [
-          IconButton(
-            icon: const Icon(Icons.add_a_photo_outlined),
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Photo moment added to memories board!')),
-              );
-            },
+          Padding(
+            padding: const EdgeInsets.only(right: AppSpacing.md),
+            child: Center(
+              child: Builder(
+                builder: (ctx) => GestureDetector(
+                  onTap: () {
+                    ScaffoldMessenger.of(ctx).showSnackBar(
+                      const SnackBar(
+                        content: Text('Photo moment added to memories board'),
+                      ),
+                    );
+                  },
+                  child: Container(
+                    width: 36,
+                    height: 36,
+                    decoration: const BoxDecoration(
+                      color: AppTheme.primary,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.add_a_photo_outlined,
+                      size: 17,
+                      color: AppTheme.onPrimary,
+                    ),
+                  ),
+                ),
+              ),
+            ),
           ),
         ],
       ),
       body: ListView.builder(
-        padding: const EdgeInsets.all(AppSpacing.md),
+        physics: const BouncingScrollPhysics(),
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.md,
+          AppSpacing.sm,
+          AppSpacing.md,
+          AppSpacing.xxl,
+        ),
         itemCount: memories.length,
         itemBuilder: (context, index) {
           final m = memories[index];
           return Padding(
-            padding: const EdgeInsets.only(bottom: AppSpacing.md),
+            padding: const EdgeInsets.only(bottom: 14),
             child: AppCard(
-              padding: const EdgeInsets.all(0),
+              padding: EdgeInsets.zero,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  ClipRRect(
-                    borderRadius: const BorderRadius.vertical(top: Radius.circular(AppSpacing.radiusMd)),
-                    child: Container(
-                      height: 160,
-                      width: double.infinity,
-                      color: AppTheme.primary.withValues(alpha: 0.1),
-                      child: Image.network(
-                        m['image']!,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) => const Center(
-                          child: Icon(Icons.photo, size: 48, color: AppTheme.primary),
-                        ),
-                      ),
+                  SizedBox(
+                    height: 186,
+                    width: double.infinity,
+                    child: Image.network(
+                      m['image']!,
+                      fit: BoxFit.cover,
+                      loadingBuilder: (context, child, progress) =>
+                          progress == null ? child : const _PhotoPlaceholder(),
+                      errorBuilder: (context, error, stackTrace) =>
+                          const _PhotoPlaceholder(),
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.all(AppSpacing.md),
+                    padding: const EdgeInsets.all(15),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(m['title']!, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-                            Text(m['time']!, style: const TextStyle(fontSize: 11, color: Colors.grey)),
+                            Expanded(
+                              child: Text(
+                                m['title']!,
+                                style: AppTypography.titleMedium,
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Text(
+                              m['time']!,
+                              style: AppTypography.caption.copyWith(
+                                fontSize: 10.5,
+                                color: AppTheme.muted(context),
+                              ),
+                            ),
                           ],
                         ),
-                        Text('📍 ${m['location']}', style: const TextStyle(fontSize: 12, color: AppTheme.primary)),
-                        const SizedBox(height: 6),
-                        Text(m['note']!, style: const TextStyle(fontSize: 12, color: Colors.black87)),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            const Icon(
+                              Icons.place,
+                              size: 13,
+                              color: AppTheme.primary,
+                            ),
+                            const SizedBox(width: 6),
+                            Expanded(
+                              child: Text(
+                                m['location']!,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: AppTypography.chipLabel.copyWith(
+                                  color: AppTheme.primary,
+                                  fontSize: 11.5,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          m['note']!,
+                          style: AppTypography.bodySmall.copyWith(
+                            fontSize: 12.5,
+                            color: AppTheme.body(context),
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -90,6 +156,24 @@ class MemoriesScreen extends StatelessWidget {
             ),
           );
         },
+      ),
+    );
+  }
+}
+
+/// Striped placeholder shown while a memory photo loads or fails.
+class _PhotoPlaceholder extends StatelessWidget {
+  const _PhotoPlaceholder();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: const Color(0xFF24282C),
+      alignment: Alignment.center,
+      child: Icon(
+        Icons.photo_outlined,
+        size: 34,
+        color: AppTheme.muted(context),
       ),
     );
   }
